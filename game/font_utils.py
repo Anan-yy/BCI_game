@@ -19,12 +19,12 @@ def load_chinese_font(size=36):
     if os.path.exists(project_font):
         try:
             return pygame.font.Font(project_font, size)
-        except:
+        except (pygame.error, OSError):
             pass
 
     try:
         return pygame.font.SysFont("simhei", size)
-    except:
+    except (pygame.error, OSError):
         pass
 
     return pygame.font.Font(pygame.font.get_default_font(), size)

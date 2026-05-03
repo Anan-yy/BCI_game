@@ -29,7 +29,7 @@ class Cup(pygame.sprite.Sprite):
                 img = pygame.image.load(path).convert_alpha()
                 img = pygame.transform.scale(img, (CUP_WIDTH, CUP_HEIGHT))
                 self._level_images.append(img)
-            except:
+            except (pygame.error, FileNotFoundError, OSError):
                 # 如果某张图片加载失败，使用默认矩形代替
                 fallback = pygame.Surface((CUP_WIDTH, CUP_HEIGHT), pygame.SRCALPHA)
                 pygame.draw.rect(fallback, CUP_COLOR, (0, 0, CUP_WIDTH, CUP_HEIGHT))
@@ -277,7 +277,7 @@ class Ingredient(pygame.sprite.Sprite):
                 )
             else:
                 raise FileNotFoundError
-        except:
+        except (pygame.error, FileNotFoundError, OSError):
             # 使用默认圆形
             self.image = pygame.Surface(
                 (INGREDIENT_SIZE, INGREDIENT_SIZE), pygame.SRCALPHA

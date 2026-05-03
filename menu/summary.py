@@ -11,7 +11,7 @@ def _load_font(size):
         if os.path.exists(path):
             try:
                 return pygame.font.Font(path, size)
-            except:
+            except (pygame.error, OSError):
                 pass
     return pygame.font.Font(None, size)
 

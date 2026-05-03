@@ -37,7 +37,7 @@ class FallingIngredient:
             try:
                 self.image = pygame.image.load(path).convert_alpha()
                 self.image = pygame.transform.scale(self.image, (size, size))
-            except:
+            except (pygame.error, OSError):
                 pass
 
         self.angle = 0
@@ -168,7 +168,7 @@ class StartTransition:
                 loaded_img = pygame.image.load(cup_path).convert_alpha()
                 self.orig_cup_img = loaded_img
                 self.cup_img = pygame.transform.scale(loaded_img, (160, 200))
-            except:
+            except (pygame.error, OSError):
                 pass
 
         # 生成食材
@@ -188,7 +188,7 @@ class StartTransition:
                 self.game_background = pygame.transform.scale(
                     self.game_background, (SCREEN_WIDTH, SCREEN_HEIGHT)
                 )
-            except:
+            except (pygame.error, OSError):
                 pass
 
         # 动画状态控制

@@ -27,7 +27,7 @@ class FocusTeapotUI:
                 self._teapot_img = pygame.transform.scale(
                     self._teapot_img, (self.width, self.height)
                 )
-            except:
+            except (pygame.error, OSError):
                 pass
 
     def update(self, value):

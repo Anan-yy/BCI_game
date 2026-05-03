@@ -200,7 +200,7 @@ def run_game(screen, clock, game_mode="regular"):
         threshold_y = cup.rect.top + cup.rect.height * 0.8
         hits = pygame.sprite.spritecollide(cup, ingredients, False)
 
-        _handle_catches(
+        creative_ingredients, recipe_result = _handle_catches(
             hits,
             cup,
             threshold_y,
@@ -275,7 +275,11 @@ def _handle_catches(
     creative_ingredients,
     recipe_result,
 ):
-    """处理与杯子碰撞的食材"""
+    """处理与杯子碰撞的食材
+
+    返回:
+        (creative_ingredients, recipe_result) 更新后的创意模式状态
+    """
     for hit in hits:
         if hit.rect.bottom > threshold_y:
             hit.rect.bottom = int(threshold_y)
@@ -300,13 +304,15 @@ def _handle_catches(
 
             if free_combine:
                 creative_ingredients.append(hit.type)
-                score_manager.score += 10
+                score_manager.add_ingredient(hit.type, is_required=False)
                 recipe_result = evaluate_recipe(creative_ingredients)
             else:
-                score_manager.score += 10
+                score_manager.add_ingredient(hit.type, is_required=hit.is_required)
 
             cup.update_level(score_manager.score)
             print(f"接住 {hit.type}！分数: {score_manager.score}")
+
+    return creative_ingredients, recipe_result
 
 
 def _handle_misses(ingredients, threshold_y, miss_effects, particles):

@@ -3,6 +3,8 @@
 包含：死区滤波、指数平滑、非线性灵敏度映射
 """
 
+from __future__ import annotations
+
 
 class DeadZoneFilter:
     """
@@ -15,20 +17,18 @@ class DeadZoneFilter:
                    值越大，过滤掉的微小信号越多，但灵敏度也会降低
     """
 
-    def __init__(self, threshold=5):
+    def __init__(self, threshold: float = 5.0) -> None:
         self.threshold = threshold
 
-    def filter(self, value):
+    def filter(self, value: float) -> float:
         """
-        对输入值进行死区滤波
-
         参数:
             value: 原始信号值（如头动偏航角）
 
         返回:
             滤波后的值，小幅信号返回 0
         """
-        return 0 if abs(value) < self.threshold else value
+        return 0.0 if abs(value) < self.threshold else value
 
 
 class ExponentialSmoothing:
@@ -44,27 +44,26 @@ class ExponentialSmoothing:
                值越小：越平滑，但延迟越大，手感"粘滞"
     """
 
-    def __init__(self, alpha=0.3):
-        self.alpha = alpha  # 平滑因子
-        self.filtered_value = None  # 上一次平滑后的值
+    def __init__(self, alpha: float = 0.3) -> None:
+        self.alpha = alpha
+        self._last_output = 0.0
+        self._initialized = False
 
-    def smooth(self, new_value):
+    def smooth(self, value: float) -> float:
         """
-        对新输入值进行指数平滑
-
         参数:
-            new_value: 新的原始信号值
+            value: 新输入值
 
         返回:
-            平滑后的信号值
+            平滑后的输出值
         """
-        if self.filtered_value is None:
-            self.filtered_value = new_value
-        else:
-            self.filtered_value = (
-                self.alpha * new_value + (1 - self.alpha) * self.filtered_value
-            )
-        return self.filtered_value
+        if not self._initialized:
+            self._last_output = value
+            self._initialized = True
+            return value
+
+        self._last_output = self.alpha * value + (1.0 - self.alpha) * self._last_output
+        return self._last_output
 
 
 class SensitivityCurve:
@@ -81,23 +80,20 @@ class SensitivityCurve:
                   值越小：小幅度信号响应更灵敏
     """
 
-    def __init__(self, base_sensitivity=1.0, exponent=1.5):
+    def __init__(self, base_sensitivity: float = 1.0, exponent: float = 1.5) -> None:
         self.base_sensitivity = base_sensitivity
         self.exponent = exponent
 
-    def apply(self, yaw_value):
+    def apply(self, value: float) -> float:
         """
-        对偏航角应用非线性灵敏度映射
-
         参数:
-            yaw_value: 原始偏航角值
+            value: 原始信号值
 
         返回:
-            映射后的偏航角值
+            映射后的值，保留原始符号
         """
-        sign = 1 if yaw_value >= 0 else -1
-        magnitude = abs(yaw_value)
-        return sign * self.base_sensitivity * (magnitude**self.exponent)
+        sign = 1 if value >= 0 else -1
+        return sign * self.base_sensitivity * (abs(value) ** self.exponent)
 
 
 class AttentionMappingCurve:
@@ -112,7 +108,7 @@ class AttentionMappingCurve:
     公式：分段函数
         - attention < 30:  multiplier = 0.5 + (attention / 30) * 0.3
         - 30 <= attention < 70:  multiplier = 0.8 + ((attention - 30) / 40) * 0.2
-        - attention >= 70:  multiplier = 1.0 + ((attention - 70) / 30) * 0.5
+        - 70 <= attention <= 100:  multiplier = 1.0 + ((attention - 70) / 30)^0.7 * 0.5
 
     参数:
         low_threshold: 低专注力阈值，默认 30
@@ -120,54 +116,52 @@ class AttentionMappingCurve:
         max_multiplier: 最大倍率，默认 1.5
     """
 
-    def __init__(self, low_threshold=30, high_threshold=70, max_multiplier=1.5):
+    def __init__(
+        self,
+        low_threshold: float = 30.0,
+        high_threshold: float = 70.0,
+        max_multiplier: float = 1.5,
+    ) -> None:
         self.low_threshold = low_threshold
         self.high_threshold = high_threshold
         self.max_multiplier = max_multiplier
 
-    def map_attention(self, attention):
+    def map_attention(self, attention: float) -> float:
         """
-        将专注力值映射为评分倍率
-
         参数:
             attention: 专注力值（0-100）
 
         返回:
             倍率值（0.5-1.5），用于乘以配方基础评分
         """
-        attention = max(0, min(100, attention))  # 限制在 0-100 范围
+        attention = max(0.0, min(100.0, attention))
 
         if attention < self.low_threshold:
             # 低专注区：0.5 ~ 0.8
             multiplier = 0.5 + (attention / self.low_threshold) * 0.3
         elif attention < self.high_threshold:
             # 中专注区：0.8 ~ 1.0
-            multiplier = (
-                0.8
-                + (
-                    (attention - self.low_threshold)
-                    / (self.high_threshold - self.low_threshold)
-                )
-                * 0.2
-            )
+            multiplier = 0.8 + ((attention - self.low_threshold) / (self.high_threshold - self.low_threshold)) * 0.2
         else:
             # 高专注区：1.0 ~ max_multiplier
-            multiplier = 1.0 + (
-                (attention - self.high_threshold) / (100 - self.high_threshold)
-            ) * (self.max_multiplier - 1.0)
+            multiplier = 1.0 + ((attention - self.high_threshold) / (100.0 - self.high_threshold)) ** 0.7 * (
+                self.max_multiplier - 1.0
+            )
 
         return multiplier
 
-    def get_rating_tier(self, attention):
+    def get_rating_tier(self, attention: float) -> str:
         """
-        根据专注力获取当前所处的倍率区间描述
+        获取专注力等级描述
 
         参数:
             attention: 专注力值（0-100）
 
         返回:
-            区间描述字符串
+            等级描述字符串
         """
+        attention = max(0.0, min(100.0, attention))
+
         if attention < self.low_threshold:
             return "分心状态"
         elif attention < self.high_threshold:

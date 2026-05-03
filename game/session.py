@@ -1,7 +1,10 @@
 """游戏会话模块 - 管理单局游戏的初始化、循环和结算"""
 
+from __future__ import annotations
+
 import logging
 import os
+from typing import Any
 
 import pygame
 
@@ -34,7 +37,56 @@ logger = logging.getLogger(__name__)
 class GameSession:
     """管理单局游戏的完整生命周期"""
 
-    def __init__(self, screen, clock, game_mode="regular"):
+    screen: pygame.Surface
+    clock: pygame.time.Clock
+    game_mode: str
+
+    mode_name: str
+    has_required: bool
+    free_combine: bool
+    bci_mode: bool
+    spawn_interval: float
+
+    font: pygame.font.Font
+    hint_font: pygame.font.Font
+    recipe_font: pygame.font.Font
+
+    cup: Cup
+    all_sprites: pygame.sprite.Group
+    ingredients: pygame.sprite.Group
+    catch_effects: pygame.sprite.Group
+    miss_effects: pygame.sprite.Group
+    particles: pygame.sprite.Group
+
+    score_manager: ScoreManager
+    ingredient_manager: IngredientManager
+    patience_bar: PatienceBar
+
+    bci_reader: BCIDataReader
+    bci_available: bool
+    dead_zone: DeadZoneFilter
+    smooth_yaw: ExponentialSmoothing
+    attention_curve: AttentionMappingCurve | None
+
+    background: pygame.Surface | None
+    has_background: bool
+
+    creative_ingredients: list[str]
+    recipe_result: dict[str, Any] | None
+
+    running: bool
+    show_summary: bool
+    use_yaw_control: bool
+    game_start_time: int
+    focus_samples: list[float]
+
+    attention: float | None
+    raw_yaw: float
+    smoothed_yaw_value: float
+
+    focus_teapot: FocusTeapotUI | None
+
+    def __init__(self, screen: pygame.Surface, clock: pygame.time.Clock, game_mode: str = "regular") -> None:
         self.screen = screen
         self.clock = clock
         self.game_mode = game_mode
@@ -48,7 +100,7 @@ class GameSession:
         self._print_mode_rules()
         self._draw_initial_frame()
 
-    def _load_mode_config(self):
+    def _load_mode_config(self) -> None:
         mode_config = GAME_MODES.get(self.game_mode, GAME_MODES[DEFAULT_GAME_MODE])
         self.mode_name = mode_config["name"]
         self.has_required = mode_config["has_required"]
@@ -56,12 +108,12 @@ class GameSession:
         self.bci_mode = mode_config["bci_mode"]
         self.spawn_interval = mode_config["spawn_interval"] / 1000.0
 
-    def _load_fonts(self):
+    def _load_fonts(self) -> None:
         self.font = load_chinese_font(36)
         self.hint_font = load_chinese_font(20)
         self.recipe_font = load_chinese_font(28)
 
-    def _init_game_objects(self):
+    def _init_game_objects(self) -> None:
         self.cup = Cup()
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.cup)
@@ -82,7 +134,7 @@ class GameSession:
         if self.has_required:
             self.score_manager.set_required_ingredient("红茶")
 
-    def _init_bci(self):
+    def _init_bci(self) -> None:
         self.bci_reader = BCIDataReader()
         self.bci_available = False
         if self.bci_mode:
@@ -95,7 +147,7 @@ class GameSession:
         if self.free_combine:
             self.attention_curve = AttentionMappingCurve()
 
-    def _load_background(self):
+    def _load_background(self) -> None:
         self.background = None
         self.has_background = False
         try:
@@ -106,7 +158,7 @@ class GameSession:
         except Exception:
             pass
 
-    def _init_state(self):
+    def _init_state(self) -> None:
         self.creative_ingredients = []
         self.recipe_result = None
 
@@ -125,7 +177,7 @@ class GameSession:
         if teapot_img_path:
             self.focus_teapot = FocusTeapotUI(image_path=teapot_img_path, x=10, y=90, width=120, height=140)
 
-    def _print_mode_rules(self):
+    def _print_mode_rules(self) -> None:
         logger.info("=" * 50)
         logger.info("疯狂奶茶杯 - %s", self.mode_name)
         logger.info("=" * 50)
@@ -147,7 +199,7 @@ class GameSession:
             logger.info("  Y: 头动模式 | K: 键盘模式 | ESC: 返回菜单")
         logger.info("=" * 50)
 
-    def _draw_initial_frame(self):
+    def _draw_initial_frame(self) -> None:
         if self.has_background and self.background:
             self.screen.blit(self.background, (0, 0))
         else:
@@ -160,7 +212,7 @@ class GameSession:
         self.screen.blit(mode_text, (10, 50))
         pygame.display.flip()
 
-    def run(self):
+    def run(self) -> str:
         while self.running:
             dt = self.clock.tick(60)
             keys = pygame.key.get_pressed()
@@ -182,7 +234,7 @@ class GameSession:
 
         return self._end_game()
 
-    def _handle_events(self):
+    def _handle_events(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -199,7 +251,7 @@ class GameSession:
                     self.running = False
                     return
 
-    def _update_bci_data(self):
+    def _update_bci_data(self) -> None:
         if self.bci_available:
             result = self.bci_reader.read_with_timeout()
             if result != (None, None):
@@ -217,13 +269,13 @@ class GameSession:
         if self.attention is not None:
             self.focus_samples.append(self.attention)
 
-    def _update_cup(self, keys, dt_sec):
+    def _update_cup(self, keys: pygame.key.ScancodeWrapper, dt_sec: float) -> None:
         if self.use_yaw_control:
             self.cup.update(yaw=self.smoothed_yaw_value, dt=dt_sec)
         else:
             self.cup.update(keys=keys, dt=dt_sec)
 
-    def _check_time_limit(self):
+    def _check_time_limit(self) -> bool:
         elapsed_ms = pygame.time.get_ticks() - self.game_start_time
         if elapsed_ms >= GAME_DURATION * 1000:
             self.show_summary = True
@@ -231,8 +283,8 @@ class GameSession:
             return False
         return True
 
-    def _update_game_objects(self, dt_sec):
-        required = ["红茶"] if self.has_required else None
+    def _update_game_objects(self, dt_sec: float) -> None:
+        required: list[str] | None = ["红茶"] if self.has_required else None
         ingredient = self.ingredient_manager.update(required_types=required)
         if ingredient:
             self.ingredients.add(ingredient)
@@ -243,7 +295,7 @@ class GameSession:
         self.particles.update(dt=dt_sec)
         self.patience_bar.update(dt_sec)
 
-    def _handle_collisions(self):
+    def _handle_collisions(self) -> None:
         threshold_y = self.cup.rect.top + self.cup.rect.height * 0.8
         hits = pygame.sprite.spritecollide(self.cup, self.ingredients, False)
 
@@ -264,7 +316,7 @@ class GameSession:
 
         _handle_misses(self.ingredients, threshold_y, self.miss_effects, self.particles)
 
-    def _render(self):
+    def _render(self) -> None:
         if self.has_background and self.background:
             self.screen.blit(self.background, (0, 0))
         else:
@@ -296,7 +348,7 @@ class GameSession:
 
         pygame.display.flip()
 
-    def _end_game(self):
+    def _end_game(self) -> str:
         if self.show_summary:
             avg_focus = sum(self.focus_samples) / len(self.focus_samples) if self.focus_samples else 0.0
             if not self.bci_mode:
@@ -308,7 +360,7 @@ class GameSession:
         return "quit"
 
 
-def run_game(screen, clock, game_mode="regular"):
+def run_game(screen: pygame.Surface, clock: pygame.time.Clock, game_mode: str = "regular") -> str:
     """
     运行主游戏循环
 
@@ -325,19 +377,19 @@ def run_game(screen, clock, game_mode="regular"):
 
 
 def _handle_catches(
-    hits,
-    cup,
-    threshold_y,
-    ingredients,
-    miss_effects,
-    catch_effects,
-    particles,
-    patience_bar,
-    score_manager,
-    free_combine,
-    creative_ingredients,
-    recipe_result,
-):
+    hits: list[Any],
+    cup: Cup,
+    threshold_y: float,
+    ingredients: pygame.sprite.Group,
+    miss_effects: pygame.sprite.Group,
+    catch_effects: pygame.sprite.Group,
+    particles: pygame.sprite.Group,
+    patience_bar: PatienceBar,
+    score_manager: ScoreManager,
+    free_combine: bool,
+    creative_ingredients: list[str],
+    recipe_result: dict[str, Any] | None,
+) -> tuple[list[str], dict[str, Any] | None]:
     """处理与杯子碰撞的食材
 
     返回:
@@ -378,7 +430,12 @@ def _handle_catches(
     return creative_ingredients, recipe_result
 
 
-def _handle_misses(ingredients, threshold_y, miss_effects, particles):
+def _handle_misses(
+    ingredients: pygame.sprite.Group,
+    threshold_y: float,
+    miss_effects: pygame.sprite.Group,
+    particles: pygame.sprite.Group,
+) -> None:
     """处理漏接的食材"""
     for ing in ingredients.sprites():
         if ing.rect.bottom > threshold_y:

@@ -1,5 +1,7 @@
 """资源管理器 - 统一加载、缓存和管理游戏资源"""
 
+from __future__ import annotations
+
 import logging
 import os
 
@@ -8,6 +10,10 @@ import pygame
 from config import ASSETS_DIR
 
 logger = logging.getLogger(__name__)
+
+ImageSize = tuple[int, int]
+FontCacheKey = tuple[str, int]
+ImageCacheKey = tuple[str, ImageSize | None]
 
 
 class AssetManager:
@@ -19,13 +25,13 @@ class AssetManager:
         font = assets.load_font("ZCOOLKuaiLe-Regular.ttf", size=36)
     """
 
-    def __init__(self):
-        self._image_cache = {}
-        self._font_cache = {}
+    def __init__(self) -> None:
+        self._image_cache: dict[ImageCacheKey, pygame.Surface] = {}
+        self._font_cache: dict[FontCacheKey, pygame.font.Font] = {}
         self._images_dir = os.path.join(ASSETS_DIR, "images")
         self._fonts_dir = os.path.join(ASSETS_DIR, "fonts")
 
-    def load_image(self, path: str, size: tuple[int, int] | None = None) -> pygame.Surface:
+    def load_image(self, path: str, size: ImageSize | None = None) -> pygame.Surface:
         """加载图片，优先使用缓存
 
         参数:
@@ -35,7 +41,7 @@ class AssetManager:
         返回:
             pygame.Surface 对象，加载失败返回品红色占位图
         """
-        cache_key = (path, size)
+        cache_key: ImageCacheKey = (path, size)
         if cache_key in self._image_cache:
             return self._image_cache[cache_key]
 
@@ -45,7 +51,7 @@ class AssetManager:
         self._image_cache[cache_key] = surface
         return surface
 
-    def _load_image_file(self, path: str, size: tuple[int, int] | None) -> pygame.Surface:
+    def _load_image_file(self, path: str, size: ImageSize | None) -> pygame.Surface:
         if os.path.exists(path):
             try:
                 surface = pygame.image.load(path).convert_alpha()
@@ -69,7 +75,7 @@ class AssetManager:
         返回:
             pygame.font.Font 对象，加载失败返回默认字体
         """
-        cache_key = (font_name, size)
+        cache_key: FontCacheKey = (font_name, size)
         if cache_key in self._font_cache:
             return self._font_cache[cache_key]
 
@@ -90,18 +96,18 @@ class AssetManager:
         self._font_cache[cache_key] = font
         return font
 
-    def preload_images(self, paths: list[str], size: tuple[int, int] | None = None):
+    def preload_images(self, paths: list[str], size: ImageSize | None = None) -> None:
         """批量预加载图片到缓存"""
         for path in paths:
             self.load_image(path, size)
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         """清空所有缓存"""
         self._image_cache.clear()
         self._font_cache.clear()
 
     @staticmethod
-    def _create_placeholder(size: tuple[int, int], label: str) -> pygame.Surface:
+    def _create_placeholder(size: ImageSize, label: str) -> pygame.Surface:
         surface = pygame.Surface(size, pygame.SRCALPHA)
         surface.fill((255, 0, 255, 128))
         font = pygame.font.Font(pygame.font.get_default_font(), min(size) // 4)

@@ -19,14 +19,14 @@ class ScoreManager:
         required_ingredient: 当前杯子的必接食材类型
     """
 
-    def __init__(self):
-        self.score = 0
-        self.money = 0
-        self.current_cup_ingredients = []  # 当前杯子的食材列表
-        self.has_required = False  # 是否已接到必接食材
-        self.required_ingredient = None  # 当前必接食材名称
+    def __init__(self) -> None:
+        self.score: int = 0
+        self.money: int = 0
+        self.current_cup_ingredients: list[str] = []
+        self.has_required: bool = False
+        self.required_ingredient: str | None = None
 
-    def set_required_ingredient(self, ingredient_type):
+    def set_required_ingredient(self, ingredient_type: str) -> None:
         """
         设置当前杯子的必接食材
 
@@ -37,7 +37,7 @@ class ScoreManager:
         self.has_required = False
         self.current_cup_ingredients = []
 
-    def add_ingredient(self, ingredient_type, is_required=False):
+    def add_ingredient(self, ingredient_type: str, is_required: bool = False) -> None:
         """
         接住食材，计算分数和金钱
 
@@ -51,24 +51,22 @@ class ScoreManager:
         """
         from config import INGREDIENT_POINTS
 
-        points = INGREDIENT_POINTS.get(ingredient_type, 5)  # 默认 5 分
+        points = INGREDIENT_POINTS.get(ingredient_type, 5)
 
         if is_required:
             self.has_required = True
             self.money += points
             logger.info("接住必接食材 %s，获得 %s 金钱", ingredient_type, points)
         elif self.has_required:
-            # 已接到必接，后续食材正常加分加金钱
             self.money += points
             logger.info("接住选接食材 %s，获得 %s 金钱", ingredient_type, points)
         else:
-            # 未接到必接，只加分不加金钱
             logger.debug("未接到必接食材，%s 无效", ingredient_type)
 
         self.score += points
         self.current_cup_ingredients.append(ingredient_type)
 
-    def finish_cup(self):
+    def finish_cup(self) -> None:
         """
         完成一杯奶茶，结算并重置状态
 
@@ -76,14 +74,14 @@ class ScoreManager:
             - 未接到必接食材：扣 10 金钱作为惩罚
         """
         if not self.has_required:
-            self.money = max(0, self.money - 10)  # 扣罚 10 金钱，最低为 0
+            self.money = max(0, self.money - 10)
             logger.warning("未接到必接食材，整杯单价归零！")
 
         logger.info("本杯完成！当前总分: %s, 总金钱: %s", self.score, self.money)
         self.has_required = False
         self.current_cup_ingredients = []
 
-    def draw(self, screen, font):
+    def draw(self, screen, font) -> None:
         """
         在屏幕上绘制分数和金钱信息
 
@@ -93,5 +91,5 @@ class ScoreManager:
         """
         score_text = font.render(f"分数: {self.score}", True, (0, 0, 0))
         money_text = font.render(f"金钱: {self.money}", True, (0, 100, 0))
-        screen.blit(score_text, (10, 10))  # 分数显示在左上角
-        screen.blit(money_text, (10, 50))  # 金钱显示在分数下方
+        screen.blit(score_text, (10, 10))
+        screen.blit(money_text, (10, 50))

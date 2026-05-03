@@ -3,12 +3,31 @@
 包括：杯子、食材、粒子特效、接住特效
 """
 
+from __future__ import annotations
+
 import math
 import random
+from typing import Any
 
 import pygame
 
-from config import *
+from config import (
+    CUP_COLOR,
+    CUP_HEIGHT,
+    CUP_LEVEL_IMGS,
+    CUP_SPEED,
+    CUP_WIDTH,
+    DEAD_ZONE,
+    INGREDIENT_COLORS,
+    INGREDIENT_IMGS,
+    INGREDIENT_SIZE,
+    INGREDIENT_SPEED,
+    RED,
+    SCREEN_HEIGHT,
+    SCREEN_WIDTH,
+    WHITE,
+    YAW_SCALE,
+)
 
 
 class Cup(pygame.sprite.Sprite):
@@ -19,10 +38,10 @@ class Cup(pygame.sprite.Sprite):
         groups: pygame 精灵组，可选，将杯子加入指定精灵组方便批量管理
     """
 
-    def __init__(self, *groups):
+    def __init__(self, *groups: Any) -> None:
         super().__init__(*groups)
         self._moving = False
-        self._level_images = []
+        self._level_images: list[pygame.Surface] = []
         self._current_level = 0
 
         # 加载所有等级的杯子图片
@@ -35,9 +54,7 @@ class Cup(pygame.sprite.Sprite):
                 # 如果某张图片加载失败，使用默认矩形代替
                 fallback = pygame.Surface((CUP_WIDTH, CUP_HEIGHT), pygame.SRCALPHA)
                 pygame.draw.rect(fallback, CUP_COLOR, (0, 0, CUP_WIDTH, CUP_HEIGHT))
-                pygame.draw.rect(
-                    fallback, WHITE, (5, 5, CUP_WIDTH - 10, CUP_HEIGHT - 10), 2
-                )
+                pygame.draw.rect(fallback, WHITE, (5, 5, CUP_WIDTH - 10, CUP_HEIGHT - 10), 2)
                 self._level_images.append(fallback)
 
         if not self._level_images:
@@ -59,7 +76,7 @@ class Cup(pygame.sprite.Sprite):
         self._bounce_t = -1.0  # 弹跳进度 (0~1)，-1 表示无弹跳动画
         self._bounce_dur = 0.2  # 弹跳持续时间（秒），值越小弹跳越快
 
-    def update_level(self, score):
+    def update_level(self, score: int) -> None:
         """根据分数切换杯子等级图片"""
         if score >= 100:
             new_level = 2
@@ -72,11 +89,11 @@ class Cup(pygame.sprite.Sprite):
             self._current_level = new_level
             self._orig_image = self._level_images[self._current_level]
 
-    def trigger_bounce(self):
+    def trigger_bounce(self) -> None:
         """触发接住食材时的弹跳动画"""
         self._bounce_t = 0.0
 
-    def update(self, keys=None, yaw=None, dt=1.0):
+    def update(self, keys: dict[int, bool] | None = None, yaw: float | None = None, dt: float = 1.0) -> None:
         """
         更新杯子位置和动画状态
 
@@ -139,7 +156,7 @@ class Particle(pygame.sprite.Sprite):
         groups: pygame 精灵组
     """
 
-    def __init__(self, x, y, color, *groups):
+    def __init__(self, x: int, y: int, color: tuple[int, int, int], *groups: Any) -> None:
         super().__init__(*groups)
         self.color = color
         size = random.randint(3, 8)  # 粒子大小（像素），范围 3~8
@@ -153,7 +170,7 @@ class Particle(pygame.sprite.Sprite):
         self.life = 1.0  # 生命值（1.0=满，0=消亡）
         self.decay = random.uniform(2.0, 3.5)  # 生命衰减速度，值越大粒子消失越快
 
-    def update(self, dt=0.016):
+    def update(self, dt: float = 0.016) -> None:
         """
         更新粒子状态
 
@@ -180,7 +197,7 @@ class CatchEffect(pygame.sprite.Sprite):
         groups: pygame 精灵组
     """
 
-    def __init__(self, ingredient, cup_rect, *groups):
+    def __init__(self, ingredient: Any, cup_rect: pygame.Rect, *groups: Any) -> None:
         super().__init__(*groups)
         self.image = ingredient.image.copy()
         self.rect = self.image.get_rect(center=ingredient.rect.center)
@@ -196,7 +213,7 @@ class CatchEffect(pygame.sprite.Sprite):
         self._done = False
         self.type = ingredient.type
 
-    def update(self, dt=0.016):
+    def update(self, dt: float = 0.016) -> None:
         """
         更新特效动画
 
@@ -210,12 +227,8 @@ class CatchEffect(pygame.sprite.Sprite):
             return
 
         ease = self._t * self._t  # ease-in 缓动：先慢后快
-        self.rect.centerx = int(
-            self._start_x + (self._target[0] - self._start_x) * ease
-        )
-        self.rect.centery = int(
-            self._start_y + (self._target[1] - self._start_y) * ease
-        )
+        self.rect.centerx = int(self._start_x + (self._target[0] - self._start_x) * ease)
+        self.rect.centery = int(self._start_y + (self._target[1] - self._start_y) * ease)
 
         shrink = 1.0 - ease * 0.8  # 缩小到 20%，0.8 为最大缩小比例
         w = int(self._start_image.get_width() * shrink)
@@ -228,7 +241,7 @@ class CatchEffect(pygame.sprite.Sprite):
 class MissEffect(pygame.sprite.Sprite):
     """接住失败特效 - 原地缩小并淡出"""
 
-    def __init__(self, ingredient, *groups):
+    def __init__(self, ingredient: Any, *groups: Any) -> None:
         super().__init__(*groups)
         self.image = ingredient.image.copy()
         self.rect = self.image.get_rect(center=ingredient.rect.center)
@@ -236,7 +249,7 @@ class MissEffect(pygame.sprite.Sprite):
         self._t = 0.0
         self._duration = 0.25
 
-    def update(self, dt=0.016):
+    def update(self, dt: float = 0.016) -> None:
         self._t += dt / self._duration
         if self._t >= 1.0:
             self.kill()
@@ -261,7 +274,7 @@ class Ingredient(pygame.sprite.Sprite):
         groups: pygame 精灵组
     """
 
-    def __init__(self, ing_type, is_required=False, *groups):
+    def __init__(self, ing_type: str, is_required: bool = False, *groups: Any) -> None:
         super().__init__(*groups)
         self.type = ing_type
         self.is_required = is_required
@@ -281,9 +294,7 @@ class Ingredient(pygame.sprite.Sprite):
                 raise FileNotFoundError
         except (pygame.error, FileNotFoundError, OSError):
             # 使用默认圆形
-            self.image = pygame.Surface(
-                (INGREDIENT_SIZE, INGREDIENT_SIZE), pygame.SRCALPHA
-            )
+            self.image = pygame.Surface((INGREDIENT_SIZE, INGREDIENT_SIZE), pygame.SRCALPHA)
             color = INGREDIENT_COLORS.get(ing_type, RED)
             pygame.draw.circle(
                 self.image,
@@ -299,7 +310,7 @@ class Ingredient(pygame.sprite.Sprite):
         self._base_centerx = self.rect.centerx
         self._orig_image = self.image.copy()
 
-    def update(self):
+    def update(self) -> None:
         self._float_t += 0.05
         self.rect.y += self.speed
         self.rect.centerx = int(self._base_centerx + math.sin(self._float_t) * 5)

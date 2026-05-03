@@ -2,10 +2,13 @@
 食材管理器模块 - 控制食材的生成时机和类型
 """
 
+from __future__ import annotations
+
 import random
 import time
+from typing import Any
 
-from config import *
+from config import INGREDIENT_SPAWN_INTERVAL, INGREDIENT_TYPES
 from game.sprites import Ingredient
 
 
@@ -17,15 +20,13 @@ class IngredientManager:
         无外部参数，使用 config.py 中的全局配置
     """
 
-    def __init__(self):
-        self.ingredients = []  # 当前活跃食材列表（未使用）
+    def __init__(self) -> None:
+        self.ingredients: list[Any] = []  # 当前活跃食材列表（未使用）
         self.last_spawn_time = time.time()  # 上一次生成食材的时间戳
-        self.spawn_interval = (
-            INGREDIENT_SPAWN_INTERVAL / 1000.0
-        )  # 生成间隔（秒），INGREDIENT_SPAWN_INTERVAL=1000 毫秒
-        self.last_type = None  # 上一次生成的食材类型，用于避免重复
+        self.spawn_interval = INGREDIENT_SPAWN_INTERVAL / 1000.0  # 生成间隔（秒），INGREDIENT_SPAWN_INTERVAL=1000 毫秒
+        self.last_type: str | None = None  # 上一次生成的食材类型，用于避免重复
 
-    def should_spawn(self):
+    def should_spawn(self) -> bool:
         """
         判断是否应该生成新食材
 
@@ -39,7 +40,7 @@ class IngredientManager:
             return True
         return False
 
-    def spawn_ingredient(self, required_types=None):
+    def spawn_ingredient(self, required_types: list[str] | None = None) -> Ingredient:
         """
         生成一个新食材
 
@@ -63,7 +64,7 @@ class IngredientManager:
 
         return Ingredient(ing_type, is_required)
 
-    def update(self, required_types=None):
+    def update(self, required_types: list[str] | None = None) -> Ingredient | None:
         """
         每帧调用，判断是否需要生成食材
 

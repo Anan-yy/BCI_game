@@ -1,11 +1,11 @@
 """耐心条单元测试"""
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from game.patience_bar import PatienceBar, CHECK_INTERVAL, FULL_BAR_DURATION
+from game.patience_bar import CHECK_INTERVAL, FULL_BAR_DURATION, PatienceBar
 
 
 class TestPatienceBar:

@@ -1,7 +1,7 @@
 """配方评分系统单元测试"""
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 

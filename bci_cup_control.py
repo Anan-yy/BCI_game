@@ -1,17 +1,17 @@
 import json
 import sys
-from PyQt5.QtWidgets import *
+
 from PyQt5.QtCore import (
-    Qt,
-    QTimer,
+    QByteArray,
     QDataStream,
-    QObject,
     QIODevice,
+    QObject,
+    Qt,
     pyqtSignal,
     pyqtSlot,
-    QByteArray,
 )
-from PyQt5.QtNetwork import QTcpSocket, QAbstractSocket
+from PyQt5.QtNetwork import QAbstractSocket, QTcpSocket
+from PyQt5.QtWidgets import *
 
 
 class HNNKTcpSocketClient(QObject):

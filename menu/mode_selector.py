@@ -1,8 +1,9 @@
 """模式选择器 - 循环切换游戏模式并显示预览"""
 
 import pygame
+
 from config import GAME_MODES
-from menu.components import MenuItem, ClickParticle
+from menu.components import ClickParticle, MenuItem
 
 
 class ModePreviewDisplay:
@@ -67,9 +68,7 @@ class ModePreviewDisplay:
             y = start_y + i * (btn_h + gap)
             color = hover if is_active else bg
             alpha_color = (*color, int(self.alpha))
-            pygame.draw.rect(
-                surf, alpha_color, (10, y, self.width - 20, btn_h), border_radius=8
-            )
+            pygame.draw.rect(surf, alpha_color, (10, y, self.width - 20, btn_h), border_radius=8)
 
             if is_active:
                 pygame.draw.rect(
@@ -122,7 +121,7 @@ class ModeSelector(MenuItem):
         self.click_t = 0.0
         self.ripple = 0.0
 
-        bg_color, _ = self._mode_colors[self.mode_keys[0]]
+        _bg_color, _ = self._mode_colors[self.mode_keys[0]]
         padding = (50, 14)
         self.padding = padding
         self.radius = 20
@@ -165,13 +164,9 @@ class ModeSelector(MenuItem):
         bg, _ = self._mode_colors.get(mode_key, ((100, 100, 100), (120, 120, 120)))
 
         for _ in range(20):
-            self.click_particles.append(
-                ClickParticle(self.rect.centerx, self.rect.centery, bg)
-            )
+            self.click_particles.append(ClickParticle(self.rect.centerx, self.rect.centery, bg))
         for _ in range(10):
-            self.click_particles.append(
-                ClickParticle(self.rect.centerx, self.rect.centery, (255, 255, 255))
-            )
+            self.click_particles.append(ClickParticle(self.rect.centerx, self.rect.centery, (255, 255, 255)))
 
         return mode_key
 
@@ -193,18 +188,14 @@ class ModeSelector(MenuItem):
         surf = pygame.Surface((w, h), pygame.SRCALPHA)
 
         mode_key = self.mode_keys[self.current_index]
-        bg_color, hover_color = self._mode_colors.get(
-            mode_key, ((100, 100, 100), (120, 120, 120))
-        )
+        bg_color, hover_color = self._mode_colors.get(mode_key, ((100, 100, 100), (120, 120, 120)))
         color = hover_color if self.hovered else bg_color
 
         pygame.draw.rect(surf, color, (0, 0, w, h), border_radius=int(self.radius * s))
 
         if self.click_t > 0:
             click_color = (*color, int(self.click_t * 100))
-            pygame.draw.rect(
-                surf, click_color, (0, 0, w, h), border_radius=int(self.radius * s)
-            )
+            pygame.draw.rect(surf, click_color, (0, 0, w, h), border_radius=int(self.radius * s))
 
         if self.ripple > 0:
             ripple_r = int((1 - self.ripple) * max(w, h) * 0.3)

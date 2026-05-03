@@ -1,7 +1,10 @@
 """BCI 配置管理模块 - 保存和加载 BCI 连接设置"""
 
 import json
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 BCI_CONFIG_FILE = "bci_config.json"
 DEFAULT_CONFIG = {
@@ -19,7 +22,7 @@ def load_bci_config():
     """
     if os.path.exists(BCI_CONFIG_FILE):
         try:
-            with open(BCI_CONFIG_FILE, "r", encoding="utf-8") as f:
+            with open(BCI_CONFIG_FILE, encoding="utf-8") as f:
                 config = json.load(f)
                 return {
                     "server_ip": config.get("server_ip", DEFAULT_CONFIG["server_ip"]),
@@ -49,5 +52,5 @@ def save_bci_config(ip, port):
             json.dump(config, f, indent=2, ensure_ascii=False)
         return True
     except Exception as e:
-        print(f"[BCI配置] 保存失败: {e}")
+        logger.error("[BCI配置] 保存失败: %s", e)
         return False

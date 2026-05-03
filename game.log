@@ -1,0 +1,57 @@
+2026-05-03 11:10:45 [INFO] __main__: 游戏启动
+2026-05-03 11:11:02 [INFO] game.session: ==================================================
+2026-05-03 11:11:02 [INFO] game.session: 疯狂奶茶杯 - 常规模式
+2026-05-03 11:11:02 [INFO] game.session: ==================================================
+2026-05-03 11:11:02 [INFO] game.session: 控制说明:
+2026-05-03 11:11:02 [INFO] game.session:   方向键左/右: 移动杯子
+2026-05-03 11:11:02 [INFO] game.session:   Y: 头动模式 | K: 键盘模式 | ESC: 返回菜单
+2026-05-03 11:11:02 [INFO] game.session: ==================================================
+2026-05-03 11:11:06 [INFO] game.session: 接住 布丁！分数: 12
+2026-05-03 11:11:09 [INFO] data.score_manager: 接住必接食材 红茶，获得 8 金钱
+2026-05-03 11:11:09 [INFO] game.session: 接住 红茶！分数: 20
+2026-05-03 11:11:11 [INFO] data.score_manager: 接住选接食材 牛奶，获得 5 金钱
+2026-05-03 11:11:11 [INFO] game.session: 接住 牛奶！分数: 25
+2026-05-03 11:11:12 [INFO] data.score_manager: 接住选接食材 仙草，获得 8 金钱
+2026-05-03 11:11:12 [INFO] game.session: 接住 仙草！分数: 33
+2026-05-03 11:11:13 [INFO] data.score_manager: 接住选接食材 布丁，获得 12 金钱
+2026-05-03 11:11:13 [INFO] game.session: 接住 布丁！分数: 45
+2026-05-03 11:11:14 [INFO] data.score_manager: 接住选接食材 牛奶，获得 5 金钱
+2026-05-03 11:11:14 [INFO] game.session: 接住 牛奶！分数: 50
+2026-05-03 11:11:15 [INFO] data.score_manager: 接住选接食材 椰果，获得 6 金钱
+2026-05-03 11:11:15 [INFO] game.session: 接住 椰果！分数: 56
+2026-05-03 11:11:17 [INFO] data.score_manager: 接住选接食材 珍珠，获得 10 金钱
+2026-05-03 11:11:17 [INFO] game.session: 接住 珍珠！分数: 66
+2026-05-03 11:11:18 [INFO] data.score_manager: 接住选接食材 椰果，获得 6 金钱
+2026-05-03 11:11:18 [INFO] game.session: 接住 椰果！分数: 72
+2026-05-03 11:11:19 [INFO] data.score_manager: 接住选接食材 珍珠，获得 10 金钱
+2026-05-03 11:11:19 [INFO] game.session: 接住 珍珠！分数: 82
+2026-05-03 11:11:20 [INFO] data.score_manager: 接住必接食材 红茶，获得 8 金钱
+2026-05-03 11:11:20 [INFO] game.session: 接住 红茶！分数: 90
+2026-05-03 11:11:22 [INFO] data.score_manager: 接住选接食材 仙草，获得 8 金钱
+2026-05-03 11:11:22 [INFO] game.session: 接住 仙草！分数: 98
+2026-05-03 11:11:24 [INFO] data.score_manager: 接住必接食材 红茶，获得 8 金钱
+2026-05-03 11:11:24 [INFO] game.session: 接住 红茶！分数: 106
+2026-05-03 11:11:26 [INFO] data.score_manager: 接住必接食材 红茶，获得 8 金钱
+2026-05-03 11:11:26 [INFO] game.session: 接住 红茶！分数: 114
+2026-05-03 11:11:27 [INFO] data.score_manager: 接住选接食材 牛奶，获得 5 金钱
+2026-05-03 11:11:27 [INFO] game.session: 接住 牛奶！分数: 119
+2026-05-03 11:11:30 [INFO] data.score_manager: 接住选接食材 仙草，获得 8 金钱
+2026-05-03 11:11:30 [INFO] game.session: 接住 仙草！分数: 127
+2026-05-03 11:11:35 [INFO] data.score_manager: 接住选接食材 椰果，获得 6 金钱
+2026-05-03 11:11:35 [INFO] game.session: 接住 椰果！分数: 133
+2026-05-03 11:11:36 [INFO] data.score_manager: 接住选接食材 布丁，获得 12 金钱
+2026-05-03 11:11:36 [INFO] game.session: 接住 布丁！分数: 145
+2026-05-03 11:11:43 [INFO] data.score_manager: 接住选接食材 布丁，获得 12 金钱
+2026-05-03 11:11:43 [INFO] game.session: 接住 布丁！分数: 157
+2026-05-03 11:11:44 [INFO] data.score_manager: 接住选接食材 仙草，获得 8 金钱
+2026-05-03 11:11:44 [INFO] game.session: 接住 仙草！分数: 165
+2026-05-03 11:11:46 [INFO] data.score_manager: 接住必接食材 红茶，获得 8 金钱
+2026-05-03 11:11:46 [INFO] game.session: 接住 红茶！分数: 173
+2026-05-03 11:12:06 [INFO] data.score_manager: 接住必接食材 红茶，获得 8 金钱
+2026-05-03 11:12:06 [INFO] game.session: 接住 红茶！分数: 181
+2026-05-03 11:12:11 [INFO] data.score_manager: 接住选接食材 珍珠，获得 10 金钱
+2026-05-03 11:12:11 [INFO] game.session: 接住 珍珠！分数: 191
+2026-05-03 11:12:23 [INFO] data.score_manager: 接住选接食材 珍珠，获得 10 金钱
+2026-05-03 11:12:23 [INFO] game.session: 接住 珍珠！分数: 201
+2026-05-03 11:13:01 [INFO] data.score_manager: 接住选接食材 布丁，获得 12 金钱
+2026-05-03 11:13:01 [INFO] game.session: 接住 布丁！分数: 213

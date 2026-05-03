@@ -1,31 +1,34 @@
 """游戏会话模块 - 管理单局游戏的初始化、循环和结算"""
 
-import pygame
+import logging
 import os
-import time
+
+import pygame
+
+from bci.data_reader import BCIDataReader
+from bci.filter import AttentionMappingCurve, DeadZoneFilter, ExponentialSmoothing
 from config import (
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    INGREDIENT_COLORS,
-    GAME_MODES,
+    BACKGROUND_IMG,
+    CUP_HEIGHT,
     DEFAULT_GAME_MODE,
     FOCUS_TEAPOT_IMG,
-    BACKGROUND_IMG,
     GAME_DURATION,
+    GAME_MODES,
+    INGREDIENT_COLORS,
     PATIENCE_BAR_SIZE,
-    CUP_HEIGHT,
-    INGREDIENT_SPEED,
+    SCREEN_HEIGHT,
+    SCREEN_WIDTH,
 )
-from game.sprites import Cup, Ingredient, CatchEffect, Particle, MissEffect
+from data.recipes import evaluate_recipe
+from data.score_manager import ScoreManager
+from game.font_utils import load_chinese_font
+from game.hud import FocusTeapotUI, draw_hud
 from game.ingredient_manager import IngredientManager
 from game.patience_bar import PatienceBar
-from game.hud import FocusTeapotUI, draw_hud
-from game.font_utils import load_chinese_font
-from data.score_manager import ScoreManager
-from data.recipes import evaluate_recipe
-from bci.data_reader import BCIDataReader
-from bci.filter import DeadZoneFilter, ExponentialSmoothing, AttentionMappingCurve
+from game.sprites import CatchEffect, Cup, MissEffect, Particle
 from menu.summary import SummaryScreen
+
+logger = logging.getLogger(__name__)
 
 
 def run_game(screen, clock, game_mode="regular"):
@@ -87,9 +90,7 @@ def run_game(screen, clock, game_mode="regular"):
     try:
         if os.path.exists(BACKGROUND_IMG):
             background = pygame.image.load(BACKGROUND_IMG).convert()
-            background = pygame.transform.scale(
-                background, (SCREEN_WIDTH, SCREEN_HEIGHT)
-            )
+            background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
             has_background = True
     except Exception:
         pass
@@ -105,16 +106,13 @@ def run_game(screen, clock, game_mode="regular"):
     running = True
     show_summary = False
     use_yaw_control = False
-    last_print_time = time.time()
     game_start_time = pygame.time.get_ticks()
     focus_samples = []
 
     teapot_img_path = FOCUS_TEAPOT_IMG if os.path.exists(FOCUS_TEAPOT_IMG) else None
     focus_teapot = None
     if teapot_img_path:
-        focus_teapot = FocusTeapotUI(
-            image_path=teapot_img_path, x=10, y=90, width=120, height=140
-        )
+        focus_teapot = FocusTeapotUI(image_path=teapot_img_path, x=10, y=90, width=120, height=140)
 
     _print_mode_rules(mode_name, bci_mode, free_combine, bci_available)
 
@@ -310,7 +308,7 @@ def _handle_catches(
                 score_manager.add_ingredient(hit.type, is_required=hit.is_required)
 
             cup.update_level(score_manager.score)
-            print(f"接住 {hit.type}！分数: {score_manager.score}")
+            logger.info("接住 %s！分数: %s", hit.type, score_manager.score)
 
     return creative_ingredients, recipe_result
 
@@ -333,23 +331,23 @@ def _handle_misses(ingredients, threshold_y, miss_effects, particles):
 
 def _print_mode_rules(mode_name, bci_mode, free_combine, bci_available):
     """打印模式规则到控制台"""
-    print("=" * 50)
-    print(f"疯狂奶茶杯 - {mode_name}")
-    print("=" * 50)
+    logger.info("=" * 50)
+    logger.info("疯狂奶茶杯 - %s", mode_name)
+    logger.info("=" * 50)
     if bci_mode:
-        print("脑机接口模式规则：")
-        print("  使用BCI设备读取专注力和头动数据")
-        print("  自由搭配食材，不同组合产生不同评分")
-        print("  专注力越高，评分加成越大")
+        logger.info("脑机接口模式规则：")
+        logger.info("  使用BCI设备读取专注力和头动数据")
+        logger.info("  自由搭配食材，不同组合产生不同评分")
+        logger.info("  专注力越高，评分加成越大")
         if not bci_available:
-            print("  [警告] BCI设备未连接，无法读取数据")
+            logger.warning("  [警告] BCI设备未连接，无法读取数据")
     elif free_combine:
-        print("创意模式规则：")
-        print("  没有必接食材，自由搭配")
-        print("  不同组合产生不同评分（黑暗→米其林）")
-        print("  专注力越高，评分加成越大")
+        logger.info("创意模式规则：")
+        logger.info("  没有必接食材，自由搭配")
+        logger.info("  不同组合产生不同评分（黑暗→米其林）")
+        logger.info("  专注力越高，评分加成越大")
     else:
-        print("控制说明:")
-        print("  方向键左/右: 移动杯子")
-        print("  Y: 头动模式 | K: 键盘模式 | ESC: 返回菜单")
-    print("=" * 50)
+        logger.info("控制说明:")
+        logger.info("  方向键左/右: 移动杯子")
+        logger.info("  Y: 头动模式 | K: 键盘模式 | ESC: 返回菜单")
+    logger.info("=" * 50)

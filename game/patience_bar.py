@@ -1,15 +1,15 @@
 """耐心条模块 - 右下角接料耐心指示器"""
 
-import pygame
 import math
 import os
+
+import pygame
+
 from config import (
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
+    CUP_LEVEL_IMGS,
     PATIENCE_BAR_IMG,
     PATIENCE_BAR_SIZE,
     PATIENCE_BAR_TIMEOUT,
-    CUP_LEVEL_IMGS,
 )
 
 

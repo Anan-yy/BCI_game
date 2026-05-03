@@ -4,11 +4,15 @@ BCI 脑电数据读取模块
 """
 
 import json
+import logging
 import socket
 import struct
 import time
-from config import BCI_CONNECTION_TIMEOUT
+
 from bci.config import load_bci_config
+from config import BCI_CONNECTION_TIMEOUT
+
+logger = logging.getLogger(__name__)
 
 
 class BCIDataReader:
@@ -53,7 +57,7 @@ class BCIDataReader:
         if port:
             self.server_port = port
 
-        print(f"[BCI] 尝试连接到 {self.server_ip}:{self.server_port}...")
+        logger.info("[BCI] 尝试连接到 %s:%s...", self.server_ip, self.server_port)
 
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -63,18 +67,20 @@ class BCIDataReader:
             self.connected = True
             self.recv_buffer = b""
             self.last_update_time = time.time()
-            print("[BCI] 已连接到科创平台")
+            logger.info("[BCI] 已连接到科创平台")
             return True
         except socket.timeout:
-            print(f"[BCI] 连接超时（{BCI_CONNECTION_TIMEOUT}秒）")
+            logger.warning("[BCI] 连接超时（%s秒）", BCI_CONNECTION_TIMEOUT)
             self.connected = False
         except ConnectionRefusedError:
-            print(
-                f"[BCI] 连接被拒绝，请检查科创平台是否已启动（{self.server_ip}:{self.server_port}）"
+            logger.error(
+                "[BCI] 连接被拒绝，请检查科创平台是否已启动（%s:%s）",
+                self.server_ip,
+                self.server_port,
             )
             self.connected = False
         except Exception as e:
-            print(f"[BCI] 连接失败: {e}")
+            logger.error("[BCI] 连接失败: %s", e)
             self.connected = False
 
         return False
@@ -88,7 +94,7 @@ class BCIDataReader:
                 pass
             self.socket = None
         self.connected = False
-        print("[BCI] 已断开连接")
+        logger.info("[BCI] 已断开连接")
 
     def _recv_data(self):
         """
@@ -108,7 +114,7 @@ class BCIDataReader:
         except BlockingIOError:
             return None
         except Exception as e:
-            print(f"[BCI] 接收数据失败: {e}")
+            logger.error("[BCI] 接收数据失败: %s", e)
             self.connected = False
             return None
 
@@ -126,7 +132,7 @@ class BCIDataReader:
                 msg = json.loads(payload.decode("utf-8"))
                 return msg
             except json.JSONDecodeError:
-                print(f"[BCI] JSON解析失败")
+                logger.warning("[BCI] JSON解析失败")
                 continue
 
         return None
@@ -151,7 +157,7 @@ class BCIDataReader:
             current_time = time.time()
             if current_time - self.last_update_time > self.timeout:
                 self.connected = False
-                print("[BCI] 数据超时，连接可能已断开")
+                logger.warning("[BCI] 数据超时，连接可能已断开")
             return self.attention, self.yaw
 
         try:
@@ -169,27 +175,26 @@ class BCIDataReader:
                         verbose
                         and time.time() - self.last_print_time >= self.print_interval
                     ):
-                        print(f"[BCI] 专注力: {self.attention}")
+                        logger.debug("[BCI] 专注力: %s", self.attention)
                         self.last_print_time = time.time()
 
                 elif algorithm_name == "gyroscope" and data_content is not None:
                     if isinstance(data_content, dict):
                         self.yaw = float(data_content.get("gyroscope_x", 0.0))
                         self.last_update_time = time.time()
-                        if (
-                            verbose
-                            and time.time() - self.last_print_time
-                            >= self.print_interval
-                        ):
-                            print(f"[BCI] Yaw: {self.yaw:.2f}")
-                            self.last_print_time = time.time()
+                    if (
+                        verbose
+                        and time.time() - self.last_print_time >= self.print_interval
+                    ):
+                        logger.debug("[BCI] Yaw: %.2f", self.yaw)
+                        self.last_print_time = time.time()
 
                 elif algorithm_name == "blink":
                     if verbose:
-                        print(f"[BCI] 眨眼: {data_content}")
+                        logger.debug("[BCI] 眨眼: %s", data_content)
 
         except Exception as e:
-            print(f"[BCI] 解析数据失败: {e}")
+            logger.error("[BCI] 解析数据失败: %s", e)
             return None, None
 
         return self.attention, self.yaw

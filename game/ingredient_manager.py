@@ -4,8 +4,9 @@
 
 import random
 import time
-from game.sprites import Ingredient
+
 from config import *
+from game.sprites import Ingredient
 
 
 class IngredientManager:

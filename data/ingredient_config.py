@@ -66,7 +66,7 @@ def get_ingredient_info(ing_type):
     返回:
         食材属性字典，不存在时返回 None
     """
-    return INGREDIENT_TYPES.get(ing_type, None)
+    return INGREDIENT_TYPES.get(ing_type)
 
 
 def get_available_ingredients(level=1):

@@ -1,7 +1,8 @@
 """游戏启动过场动画"""
 
 import pygame
-from config import SCREEN_WIDTH, SCREEN_HEIGHT
+
+from config import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
 def _render_text_with_outline(font, text, color, outline_color, outline_width=2):

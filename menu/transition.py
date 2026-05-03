@@ -1,17 +1,19 @@
 """点击开始游戏后的过场动画"""
 
-import pygame
 import math
-import random
 import os
+import random
+
+import pygame
+
 from config import (
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
+    BACKGROUND_IMG,
     IMAGES_DIR,
     INGREDIENT_COLORS,
-    INGREDIENT_TYPES,
     INGREDIENT_IMGS,
-    BACKGROUND_IMG,
+    INGREDIENT_TYPES,
+    SCREEN_HEIGHT,
+    SCREEN_WIDTH,
 )
 
 

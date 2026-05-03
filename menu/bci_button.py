@@ -1,9 +1,11 @@
 """BCI模式按钮 - 带脉冲动画和发光特效"""
 
-import pygame
 import math
 import random
-from menu.components import MenuItem, ClickParticle
+
+import pygame
+
+from menu.components import ClickParticle, MenuItem
 
 
 class BCIModeButton(MenuItem):

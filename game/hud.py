@@ -1,11 +1,12 @@
 """游戏 HUD 模块 - 专注力茶壶 UI + HUD 渲染逻辑"""
 
 import os
+
 import pygame
+
 from config import (
-    SCREEN_WIDTH,
     SCREEN_HEIGHT,
-    FOCUS_TEAPOT_IMG,
+    SCREEN_WIDTH,
 )
 
 

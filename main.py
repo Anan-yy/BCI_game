@@ -2,15 +2,21 @@
 负责初始化 pygame、管理界面跳转（主菜单 -> 模式选择 -> 游戏）
 """
 
-import pygame
+import logging
 import os
 import sys
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, IMAGES_DIR
+
+import pygame
+
+from config import IMAGES_DIR, SCREEN_HEIGHT, SCREEN_WIDTH
 from game.font_utils import load_chinese_font
 from game.session import run_game
-from menu import MainMenu, GameSettingsScreen
+from menu import GameSettingsScreen, MainMenu
 from menu.splash import SplashScreen
 from menu.transition import StartTransition
+from utils.logging_config import get_logger, setup_logging
+
+logger = get_logger(__name__)
 
 
 def show_menu(screen):
@@ -23,6 +29,9 @@ def show_menu(screen):
 
 def main():
     """游戏主入口，管理界面循环跳转"""
+    setup_logging(level=logging.INFO, log_file="game.log")
+    logger.info("游戏启动")
+
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("疯狂奶茶杯 - 第1周")

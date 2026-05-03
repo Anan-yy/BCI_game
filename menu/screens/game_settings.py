@@ -1,7 +1,8 @@
 """游戏设置页面 - 包含BCI设置等子设置项"""
 
 import pygame
-from config import SCREEN_WIDTH, SCREEN_HEIGHT
+
+from config import SCREEN_HEIGHT, SCREEN_WIDTH
 from menu.bci_button import BCIModeButton
 from menu.components import MenuItem
 from menu.screens.bci_settings import BCISettingsScreen

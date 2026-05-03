@@ -1,22 +1,22 @@
 """主菜单 - 游戏启动后的第一个界面"""
 
-import pygame
 import math
 import os
 import random
+
+import pygame
+
 from config import (
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    ASSETS_DIR,
+    BADGE_IMGS,
     IMAGES_DIR,
     INGREDIENT_COLORS,
-    GAME_MODES,
-    BADGE_IMGS,
+    SCREEN_HEIGHT,
+    SCREEN_WIDTH,
 )
-from menu.components import MenuItem, Badge
-from menu.particles import FloatingItem, SteamParticle
-from menu.mode_selector import ModeSelector
 from menu.bci_button import BCIModeButton
+from menu.components import Badge, MenuItem
+from menu.mode_selector import ModeSelector
+from menu.particles import FloatingItem, SteamParticle
 from menu.screens.game_settings import GameSettingsScreen
 
 
@@ -98,10 +98,7 @@ class MainMenu:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
                         self.result = "quit"
-                    elif event.key == pygame.K_RETURN:
-                        self.running = False
-                        self.result = "start"
-                    elif event.key == pygame.K_1:
+                    elif event.key == pygame.K_RETURN or event.key == pygame.K_1:
                         self.running = False
                         self.result = "start"
                     elif event.key == pygame.K_2:

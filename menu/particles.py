@@ -1,9 +1,9 @@
 """粒子系统 - 浮动装饰粒子和蒸汽粒子"""
 
-import pygame
 import math
 import random
-from config import INGREDIENT_COLORS
+
+import pygame
 
 
 class FloatingItem:

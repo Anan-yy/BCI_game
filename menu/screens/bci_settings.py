@@ -1,10 +1,11 @@
 """BCI设置页面 - 配置科创平台TCP服务器连接参数"""
 
 import pygame
-from config import SCREEN_WIDTH, SCREEN_HEIGHT
+
 from bci.config import load_bci_config, save_bci_config
-from menu.text_input import TextInputBox
+from config import SCREEN_HEIGHT, SCREEN_WIDTH
 from menu.components import MenuItem
+from menu.text_input import TextInputBox
 
 
 class BCISettingsScreen:

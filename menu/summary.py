@@ -1,8 +1,10 @@
 """游戏结束总结界面"""
 
-import pygame
 import os
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, ASSETS_DIR, CHINESE_FONTS
+
+import pygame
+
+from config import ASSETS_DIR, CHINESE_FONTS, SCREEN_HEIGHT, SCREEN_WIDTH
 
 
 def _load_font(size):

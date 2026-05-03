@@ -1,9 +1,10 @@
 """菜单基础组件 - MenuItem 按钮和 ClickParticle 点击粒子"""
 
-import pygame
 import math
-import random
 import os
+import random
+
+import pygame
 
 
 class ClickParticle:

@@ -2,6 +2,10 @@
 分数和金钱管理系统 - 跟踪玩家得分、金钱、必接食材状态
 """
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class ScoreManager:
     """
@@ -52,14 +56,14 @@ class ScoreManager:
         if is_required:
             self.has_required = True
             self.money += points
-            print(f"接住必接食材 {ingredient_type}，获得 {points} 金钱")
+            logger.info("接住必接食材 %s，获得 %s 金钱", ingredient_type, points)
         elif self.has_required:
             # 已接到必接，后续食材正常加分加金钱
             self.money += points
-            print(f"接住选接食材 {ingredient_type}，获得 {points} 金钱")
+            logger.info("接住选接食材 %s，获得 %s 金钱", ingredient_type, points)
         else:
             # 未接到必接，只加分不加金钱
-            print(f"未接到必接食材，{ingredient_type} 无效")
+            logger.debug("未接到必接食材，%s 无效", ingredient_type)
 
         self.score += points
         self.current_cup_ingredients.append(ingredient_type)
@@ -73,9 +77,9 @@ class ScoreManager:
         """
         if not self.has_required:
             self.money = max(0, self.money - 10)  # 扣罚 10 金钱，最低为 0
-            print("未接到必接食材，整杯单价归零！")
+            logger.warning("未接到必接食材，整杯单价归零！")
 
-        print(f"本杯完成！当前总分: {self.score}, 总金钱: {self.money}")
+        logger.info("本杯完成！当前总分: %s, 总金钱: %s", self.score, self.money)
         self.has_required = False
         self.current_cup_ingredients = []
 

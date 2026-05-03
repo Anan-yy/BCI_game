@@ -1,5 +1,7 @@
 """游戏设置页面 - 包含BCI设置等子设置项"""
 
+from __future__ import annotations
+
 import pygame
 
 from config import SCREEN_HEIGHT, SCREEN_WIDTH
@@ -11,7 +13,7 @@ from menu.screens.bci_settings import BCISettingsScreen
 class GameSettingsScreen:
     """游戏设置页面，包含BCI设置等子设置项"""
 
-    def __init__(self, screen, font, title_font):
+    def __init__(self, screen: pygame.Surface, font: pygame.font.Font, title_font: pygame.font.Font) -> None:
         self.screen = screen
         self.font = font
         self.title_font = title_font
@@ -34,7 +36,7 @@ class GameSettingsScreen:
             radius=15,
         )
 
-    def run(self):
+    def run(self) -> str | None:
         """运行设置页面"""
         while self.running:
             dt = self.clock.tick(60) / 1000.0
@@ -48,9 +50,7 @@ class GameSettingsScreen:
                         self.result = "back"
                 else:
                     if self.bci_btn.handle_event(event):
-                        bci_settings = BCISettingsScreen(
-                            self.screen, self.font, self.title_font
-                        )
+                        bci_settings = BCISettingsScreen(self.screen, self.font, self.title_font)
                         bci_settings.run()
                     if self.back_btn.handle_event(event):
                         self.running = False
@@ -62,11 +62,11 @@ class GameSettingsScreen:
 
         return self.result
 
-    def _update(self, dt):
+    def _update(self, dt: float) -> None:
         self.bci_btn.update(dt)
         self.back_btn.update(dt)
 
-    def _draw(self):
+    def _draw(self) -> None:
         self.screen.fill((30, 30, 40))
 
         title = self.title_font.render("游戏设置", True, (255, 255, 255))
@@ -79,6 +79,4 @@ class GameSettingsScreen:
         self.back_btn.draw(self.screen)
 
         hint = self.font.render("ESC 返回主菜单", True, (100, 100, 100))
-        self.screen.blit(
-            hint, (SCREEN_WIDTH // 2 - hint.get_width() // 2, SCREEN_HEIGHT - 50)
-        )
+        self.screen.blit(hint, (SCREEN_WIDTH // 2 - hint.get_width() // 2, SCREEN_HEIGHT - 50))

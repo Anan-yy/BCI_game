@@ -1,5 +1,7 @@
 """菜单基础组件 - MenuItem 按钮和 ClickParticle 点击粒子"""
 
+from __future__ import annotations
+
 import math
 import os
 import random
@@ -10,7 +12,7 @@ import pygame
 class ClickParticle:
     """点击特效粒子 - 从点击位置向外扩散的彩色粒子"""
 
-    def __init__(self, x, y, color):
+    def __init__(self, x: float, y: float, color: tuple[int, int, int]) -> None:
         self.x = float(x)
         self.y = float(y)
         self.color = color
@@ -22,7 +24,7 @@ class ClickParticle:
         self.decay = random.uniform(1.5, 3.0)
         self.size = random.randint(3, 8)
 
-    def update(self, dt=0.016):
+    def update(self, dt: float = 0.016) -> bool:
         self.life -= self.decay * dt
         if self.life <= 0:
             return False
@@ -32,7 +34,7 @@ class ClickParticle:
         self.vy *= 0.96
         return True
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         alpha = int(self.life * 255)
         surf = pygame.Surface((self.size * 2, self.size * 2), pygame.SRCALPHA)
         pygame.draw.circle(surf, (*self.color, alpha), (self.size, self.size), self.size)
@@ -44,16 +46,16 @@ class MenuItem:
 
     def __init__(
         self,
-        text,
-        x,
-        y,
-        font,
-        bg_color,
-        hover_color,
-        text_color,
-        padding=(60, 18),
-        radius=20,
-    ):
+        text: str,
+        x: int,
+        y: int,
+        font: pygame.font.Font,
+        bg_color: tuple[int, int, int],
+        hover_color: tuple[int, int, int],
+        text_color: tuple[int, int, int],
+        padding: tuple[int, int] = (60, 18),
+        radius: int = 20,
+    ) -> None:
         self.text = text
         self.font = font
         self.bg_color = bg_color
@@ -72,14 +74,14 @@ class MenuItem:
         self.click_t = 0.0
         self.click_particles = []
 
-    def update(self, dt=0.016):
+    def update(self, dt: float = 0.016) -> None:
         target = 1.0 if self.hovered else 0.0
         self.scale_t += (target - self.scale_t) * 0.15
         if self.click_t > 0:
             self.click_t -= dt * 3
         self.click_particles = [p for p in self.click_particles if p.update(dt)]
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         s = 1.0 + 0.06 * self.scale_t
         w = int(self.rect.width * s)
         h = int(self.rect.height * s)
@@ -101,7 +103,7 @@ class MenuItem:
         for p in self.click_particles:
             p.draw(screen)
 
-    def trigger_click(self):
+    def trigger_click(self) -> None:
         """触发点击粒子效果"""
         self.click_t = 1.0
         for _ in range(15):
@@ -109,7 +111,7 @@ class MenuItem:
         for _ in range(8):
             self.click_particles.append(ClickParticle(self.rect.centerx, self.rect.centery, (255, 255, 255)))
 
-    def handle_event(self, event):
+    def handle_event(self, event: pygame.event.Event) -> bool:
         if event.type == pygame.MOUSEMOTION:
             self.hovered = self.rect.collidepoint(event.pos)
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -119,14 +121,25 @@ class MenuItem:
         return False
 
     @staticmethod
-    def _draw_rounded_rect(surface, rect, color, radius):
+    def _draw_rounded_rect(
+        surface: pygame.Surface,
+        rect: tuple[int, int, int, int],
+        color: tuple[int, ...],
+        radius: int,
+    ) -> None:
         pygame.draw.rect(surface, color, rect, border_radius=radius)
 
 
 class Badge:
     """徽章组件，支持点击粒子爆开效果和悬停动画"""
 
-    def __init__(self, images, x, y, size=(60, 60)):
+    def __init__(
+        self,
+        images: list[str],
+        x: int,
+        y: int,
+        size: tuple[int, int] = (60, 60),
+    ) -> None:
         self.images = images
         self.x = x
         self.y = y
@@ -139,7 +152,7 @@ class Badge:
         self.hover_particles = []
         self._load_badge()
 
-    def _load_badge(self):
+    def _load_badge(self) -> None:
         if self.level < len(self.images):
             path = self.images[self.level]
             if path and os.path.exists(path):
@@ -151,11 +164,11 @@ class Badge:
                     pass
         self.badge_surf = None
 
-    def set_level(self, level):
+    def set_level(self, level: int) -> None:
         self.level = level
         self._load_badge()
 
-    def get_rect(self):
+    def get_rect(self) -> pygame.Rect:
         if self.badge_surf is None:
             return pygame.Rect(self.x, self.y, self.size[0], self.size[1])
         w, h = self.badge_surf.get_size()
@@ -163,13 +176,13 @@ class Badge:
         w, h = int(w * s), int(h * s)
         return pygame.Rect(self.x, self.y, w, h)
 
-    def update(self, dt=0.016):
+    def update(self, dt: float = 0.016) -> None:
         target = 1.0 if self.hovered else 0.0
         self.scale_t += (target - self.scale_t) * 0.15
         self.click_particles = [p for p in self.click_particles if p.update(dt)]
         self.hover_particles = [p for p in self.hover_particles if p.update(dt)]
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         s = 1.0 + 0.1 * self.scale_t
         if self.badge_surf:
             ow, oh = self.badge_surf.get_size()
@@ -185,7 +198,7 @@ class Badge:
         for p in self.click_particles:
             p.draw(screen)
 
-    def trigger_click(self):
+    def trigger_click(self) -> None:
         cx = self.x + self.size[0] // 2
         cy = self.y + self.size[1] // 2
         burst_colors = [(255, 215, 0), (255, 255, 255), (255, 180, 50)]
@@ -206,7 +219,7 @@ class Badge:
             p.decay = random.uniform(0.8, 1.5)
             self.click_particles.append(p)
 
-    def handle_event(self, event):
+    def handle_event(self, event: pygame.event.Event) -> bool:
         if event.type == pygame.MOUSEMOTION:
             self.hovered = self.get_rect().collidepoint(event.pos)
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:

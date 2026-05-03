@@ -1,5 +1,7 @@
 """主菜单 - 游戏启动后的第一个界面"""
 
+from __future__ import annotations
+
 import math
 import os
 import random
@@ -21,7 +23,7 @@ from menu.screens.game_settings import GameSettingsScreen
 
 
 class MainMenu:
-    def __init__(self, screen, font, title_font):
+    def __init__(self, screen: pygame.Surface, font: pygame.font.Font, title_font: pygame.font.Font) -> None:
         self.screen = screen
         self.font = font
         self.title_font = title_font
@@ -62,9 +64,7 @@ class MainMenu:
             mode_keys=["regular", "challenge", "creative"],
         )
 
-        self.bci_btn = BCIModeButton(
-            "脑机接口", cx, start_y + btn_spacing * 2, font, title_font
-        )
+        self.bci_btn = BCIModeButton("脑机接口", cx, start_y + btn_spacing * 2, font, title_font)
 
         self.settings_btn = MenuItem(
             "游戏设置",
@@ -80,14 +80,14 @@ class MainMenu:
         self.title_phase = 0.0
         self.bg_breathe_scale = 1.0
 
-    def _load_bg(self):
+    def _load_bg(self) -> pygame.Surface | None:
         path = os.path.join(IMAGES_DIR, "backgrounds", "奶茶店1.png")
         if os.path.exists(path):
             img = pygame.image.load(path).convert()
             return pygame.transform.scale(img, (SCREEN_WIDTH, SCREEN_HEIGHT))
         return None
 
-    def run(self):
+    def run(self) -> tuple[str | None, str]:
         while self.running:
             dt = self.clock.tick(60) / 1000.0
             for event in pygame.event.get():
@@ -121,9 +121,7 @@ class MainMenu:
                         self.result = "start"
                         self.current_mode = "bci"
                     if self.settings_btn.handle_event(event):
-                        settings_screen = GameSettingsScreen(
-                            self.screen, self.font, self.title_font
-                        )
+                        settings_screen = GameSettingsScreen(self.screen, self.font, self.title_font)
                         settings_screen.run()
 
             self._update(dt)
@@ -132,7 +130,7 @@ class MainMenu:
 
         return self.result, self.current_mode
 
-    def _update(self, dt):
+    def _update(self, dt: float) -> None:
         self.badge.update(dt)
         self.start_btn.update(dt)
         self.mode_selector.update(dt)
@@ -149,12 +147,12 @@ class MainMenu:
         if self.steam_spawn_timer > 0.05:
             self.steam_spawn_timer = 0
             spawn_x = random.uniform(SCREEN_WIDTH * 0.3, SCREEN_WIDTH * 0.7)
-            self.steam_particles.append(SteamParticle(spawn_x, SCREEN_HEIGHT + 10))
+            self.steam_particles.append(SteamParticle(int(spawn_x), SCREEN_HEIGHT + 10))
         self.steam_particles = [p for p in self.steam_particles if p.update()]
 
         self.title_phase += dt * 2
 
-    def _draw(self, dt):
+    def _draw(self, dt: float) -> None:
         if self.bg:
             scale_offset = (SCREEN_WIDTH * self.bg_breathe_scale - SCREEN_WIDTH) // 2
             scaled_bg = pygame.transform.scale(
@@ -190,9 +188,7 @@ class MainMenu:
         self.screen.blit(title_shadow, (tx + 3, ty + 3))
         self.screen.blit(title_surf, (tx, ty))
 
-        sub_surf = self.font.render(
-            "接住食材 · 制作属于你的美味奶茶", True, (220, 200, 170)
-        )
+        sub_surf = self.font.render("接住食材 · 制作属于你的美味奶茶", True, (220, 200, 170))
         sw = sub_surf.get_width()
         self.screen.blit(sub_surf, ((SCREEN_WIDTH - sw) // 2, ty + 60))
 
@@ -202,6 +198,4 @@ class MainMenu:
         self.settings_btn.draw(self.screen)
 
         hint = self.font.render("ESC 退出", True, (180, 180, 180))
-        self.screen.blit(
-            hint, (SCREEN_WIDTH - hint.get_width() - 20, SCREEN_HEIGHT - 35)
-        )
+        self.screen.blit(hint, (SCREEN_WIDTH - hint.get_width() - 20, SCREEN_HEIGHT - 35))

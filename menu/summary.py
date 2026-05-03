@@ -1,5 +1,7 @@
 """游戏结束总结界面"""
 
+from __future__ import annotations
+
 import os
 import sys
 
@@ -8,7 +10,7 @@ import pygame
 from config import ASSETS_DIR, CHINESE_FONTS, SCREEN_HEIGHT, SCREEN_WIDTH
 
 
-def _load_font(size):
+def _load_font(size: int) -> pygame.font.Font:
     """辅助函数：加载中文字体"""
     for path in CHINESE_FONTS:
         if os.path.exists(path):
@@ -20,7 +22,13 @@ def _load_font(size):
 
 
 class SummaryScreen:
-    def __init__(self, screen, score, focus_value=0.0, game_mode="regular"):
+    def __init__(
+        self,
+        screen: pygame.Surface,
+        score: int,
+        focus_value: float = 0.0,
+        game_mode: str = "regular",
+    ) -> None:
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.score = score
@@ -46,7 +54,7 @@ class SummaryScreen:
         # 生成评语
         self.comment = self._generate_comment()
 
-    def _generate_comment(self):
+    def _generate_comment(self) -> str:
         """根据分数和专注力生成动态评语"""
         is_bci = self.game_mode == "bci"
 
@@ -67,7 +75,7 @@ class SummaryScreen:
                 return "初露锋芒，再接再厉！"
             return "万事开头难，多喝奶茶多练习！"
 
-    def run(self):
+    def run(self) -> str:
         while True:
             self.clock.tick(60)
 

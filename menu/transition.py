@@ -1,5 +1,7 @@
 """点击开始游戏后的过场动画"""
 
+from __future__ import annotations
+
 import math
 import os
 import random
@@ -21,7 +23,7 @@ from config import (
 class FallingIngredient:
     """下落的食材粒子"""
 
-    def __init__(self, target_x, target_y, size=80):
+    def __init__(self, target_x: float, target_y: float, size: int = 80) -> None:
         self.target_x = target_x
         self.target_y = target_y
         self.size = size
@@ -47,7 +49,7 @@ class FallingIngredient:
         self.rot_speed = random.uniform(-5, 5)
         self.caught = False
 
-    def update(self):
+    def update(self) -> bool:
         if not self.caught:
             self.y += self.speed
             self.angle += self.rot_speed
@@ -58,7 +60,7 @@ class FallingIngredient:
                 return True
         return False
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         if self.caught:
             return
 
@@ -73,8 +75,8 @@ class FallingIngredient:
 class SplashEffect:
     """接住食材的溅射效果"""
 
-    def __init__(self, x, y, color):
-        self.particles = []
+    def __init__(self, x: float, y: float, color: tuple[int, int, int]) -> None:
+        self.particles: list[dict[str, float]] = []
         for _ in range(10):
             angle = random.uniform(-math.pi, 0)
             speed = random.uniform(3, 8)
@@ -89,7 +91,7 @@ class SplashEffect:
             )
         self.color = color
 
-    def update(self):
+    def update(self) -> bool:
         for p in self.particles:
             p["x"] += p["vx"]
             p["y"] += p["vy"]
@@ -98,7 +100,7 @@ class SplashEffect:
         self.particles = [p for p in self.particles if p["life"] > 0]
         return len(self.particles) > 0
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         for p in self.particles:
             s = pygame.Surface((10, 10), pygame.SRCALPHA)
             alpha = int(p["life"] * 255)
@@ -109,8 +111,8 @@ class SplashEffect:
 class MissEffect:
     """食材掉落/未接住的失败特效"""
 
-    def __init__(self, x, y, color):
-        self.particles = []
+    def __init__(self, x: float, y: float, color: tuple[int, int, int]) -> None:
+        self.particles: list[dict[str, float]] = []
         # 粒子向下及四周扩散
         for _ in range(12):
             angle = random.uniform(-0.2, math.pi + 0.2)  # 主要是下半圆
@@ -122,12 +124,12 @@ class MissEffect:
                     "vx": math.cos(angle) * speed,
                     "vy": math.sin(angle) * speed,
                     "life": 1.0,
-                    "size": random.randint(3, 6),
+                    "size": float(random.randint(3, 6)),
                 }
             )
         self.color = color
 
-    def update(self):
+    def update(self) -> bool:
         for p in self.particles:
             p["x"] += p["vx"]
             p["y"] += p["vy"]
@@ -136,7 +138,7 @@ class MissEffect:
         self.particles = [p for p in self.particles if p["life"] > 0]
         return len(self.particles) > 0
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         for p in self.particles:
             s = pygame.Surface((p["size"], p["size"]), pygame.SRCALPHA)
             alpha = int(p["life"] * 255)
@@ -147,7 +149,7 @@ class MissEffect:
 class StartTransition:
     """游戏开始过渡动画"""
 
-    def __init__(self, screen):
+    def __init__(self, screen: pygame.Surface) -> None:
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.ingredients = []
@@ -195,7 +197,7 @@ class StartTransition:
         self.miss_effects = []  # 失败特效列表
         self.clicked = False  # 是否已点击触发失败动画
 
-    def run(self):
+    def run(self) -> None:
         while True:
             dt = self.clock.tick(60) / 1000.0
 
@@ -232,7 +234,7 @@ class StartTransition:
 
             pygame.display.flip()
 
-    def _trigger_all_miss(self):
+    def _trigger_all_miss(self) -> None:
         """触发所有当前屏幕内食材的失败动画"""
         if self.clicked:
             return
@@ -242,7 +244,7 @@ class StartTransition:
         self.ingredients.clear()
         self.ingredient_count = self.max_ingredients
 
-    def _update_falling(self, dt, target_x):
+    def _update_falling(self, dt: float, target_x: float) -> None:
         """掉落阶段"""
         # 桃色背景
         self.screen.fill((255, 228, 181))
@@ -312,7 +314,7 @@ class StartTransition:
             self.phase = "returning"
             self.return_start_time = pygame.time.get_ticks()
 
-    def _update_returning(self):
+    def _update_returning(self) -> bool:
         """回归阶段：杯子缩小并移动到游戏初始位置，保持动画背景"""
         elapsed_return = pygame.time.get_ticks() - self.return_start_time
         duration = 1500  # 回归动画持续1.5秒
@@ -346,7 +348,7 @@ class StartTransition:
             return True
         return False
 
-    def _update_flashing(self):
+    def _update_flashing(self) -> bool:
         """闪黑阶段：背景淡入淡出黑屏，杯子保持可见"""
         elapsed = pygame.time.get_ticks() - self.flash_start_time
         duration = 1200  # 总时长 1.2 秒 (0.6s 变黑 + 0.6s 变亮)
@@ -354,18 +356,15 @@ class StartTransition:
 
         # 计算遮罩透明度：0 -> 255 -> 0
         show_game_bg = False
+        base_bg: tuple[int, int, int] = (255, 228, 181)
         if t < 0.5:
             overlay_alpha = int((t * 2) * 255)
-            base_bg = (255, 228, 181)  # 前半程：桃色背景
         else:
             overlay_alpha = int((1.0 - (t - 0.5) * 2) * 255)
             # 后半程：使用游戏背景 (如果在黑屏期间切换)
             if self.game_background:
                 self.screen.blit(self.game_background, (0, 0))
-                base_bg = None
                 show_game_bg = True
-            else:
-                base_bg = (255, 228, 181)
 
         # 1. 绘制背景 (若非全黑)
         if not show_game_bg:

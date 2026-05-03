@@ -1,5 +1,7 @@
 """模式选择器 - 循环切换游戏模式并显示预览"""
 
+from __future__ import annotations
+
 import pygame
 
 from config import GAME_MODES
@@ -9,7 +11,9 @@ from menu.components import ClickParticle, MenuItem
 class ModePreviewDisplay:
     """模式预览显示框 - 鼠标靠近时显示模式列表"""
 
-    def __init__(self, x, y, font, title_font, mode_key="regular"):
+    def __init__(
+        self, x: int, y: int, font: pygame.font.Font, title_font: pygame.font.Font, mode_key: str = "regular"
+    ) -> None:
         self.x = x
         self.y = y
         self.font = font
@@ -27,17 +31,17 @@ class ModePreviewDisplay:
             "creative": ((120, 80, 200), (150, 110, 240)),
         }
 
-    def update(self, dt=0.016):
+    def update(self, dt: float = 0.016) -> None:
         self.alpha += (self.target_alpha - self.alpha) * 0.2
 
-    def set_mode(self, mode_key):
+    def set_mode(self, mode_key: str) -> None:
         self.mode_key = mode_key
         self.target_alpha = 200
 
-    def hide(self):
+    def hide(self) -> None:
         self.target_alpha = 0
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         if self.alpha < 5:
             return
 
@@ -96,7 +100,14 @@ class ModePreviewDisplay:
 class ModeSelector(MenuItem):
     """模式选择按钮 - 点击循环切换模式，悬停显示模式信息"""
 
-    def __init__(self, x, y, font, title_font, mode_keys=None):
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        font: pygame.font.Font,
+        title_font: pygame.font.Font,
+        mode_keys: list[str] | None = None,
+    ) -> None:
         self.mode_keys = mode_keys or ["regular", "challenge", "creative"]
         self.current_index = 0
         self.font = font
@@ -140,7 +151,7 @@ class ModeSelector(MenuItem):
             self.mode_keys[0],
         )
 
-    def _update_text(self):
+    def _update_text(self) -> None:
         mode_key = self.mode_keys[self.current_index]
         self._text_surf = self.title_font.render("模式选择", True, (255, 255, 255))
         w = self._text_surf.get_width() + self.padding[0] * 2
@@ -155,7 +166,7 @@ class ModeSelector(MenuItem):
             mode_key,
         )
 
-    def cycle_mode(self):
+    def cycle_mode(self) -> str:
         self.current_index = (self.current_index + 1) % len(self.mode_keys)
         self.click_t = 1.0
         self.ripple = 1.0
@@ -170,7 +181,7 @@ class ModeSelector(MenuItem):
 
         return mode_key
 
-    def update(self, dt=0.016):
+    def update(self, dt: float = 0.016) -> None:
         target = 1.0 if self.hovered else 0.0
         self.scale_t += (target - self.scale_t) * 0.15
         if self.click_t > 0:
@@ -181,7 +192,7 @@ class ModeSelector(MenuItem):
         self.click_particles = [p for p in self.click_particles if p.update(dt)]
         self.info_display.update(dt)
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         s = 1.0 + 0.06 * self.scale_t
         w = int(self.rect.width * s)
         h = int(self.rect.height * s)
@@ -224,7 +235,7 @@ class ModeSelector(MenuItem):
             self.info_display.set_mode(mode_key)
             self.info_display.draw(screen)
 
-    def handle_event(self, event):
+    def handle_event(self, event: pygame.event.Event) -> str | None:  # type: ignore[override]
         """处理鼠标事件，返回模式 key 或 None"""
         if event.type == pygame.MOUSEMOTION:
             was_hovered = self.hovered

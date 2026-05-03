@@ -1,12 +1,24 @@
 """文本输入框 - 用于BCI设置页面的IP和端口输入"""
 
+from __future__ import annotations
+
 import pygame
 
 
 class TextInputBox:
     """文本输入框"""
 
-    def __init__(self, x, y, w, h, font, default_text="", label="", max_length=20):
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        w: int,
+        h: int,
+        font: pygame.font.Font,
+        default_text: str = "",
+        label: str = "",
+        max_length: int = 20,
+    ) -> None:
         self.rect = pygame.Rect(x, y, w, h)
         self.font = font
         self.label = label
@@ -18,7 +30,7 @@ class TextInputBox:
         self.color = self.color_inactive
         self.blink_t = 0.0
 
-    def handle_event(self, event):
+    def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.active = self.rect.collidepoint(event.pos)
             self.color = self.color_active if self.active else self.color_inactive
@@ -33,10 +45,10 @@ class TextInputBox:
                 if char.isprintable():
                     self.text += char
 
-    def update(self, dt):
+    def update(self, dt: float) -> None:
         self.blink_t += dt * 4
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         label_surf = self.font.render(self.label, True, (200, 200, 200))
         screen.blit(label_surf, (self.rect.x, self.rect.y - 30))
 
@@ -60,5 +72,5 @@ class TextInputBox:
                 2,
             )
 
-    def get_text(self):
+    def get_text(self) -> str:
         return self.text

@@ -1,5 +1,7 @@
 """BCI模式按钮 - 带脉冲动画和发光特效"""
 
+from __future__ import annotations
+
 import math
 import random
 
@@ -11,7 +13,7 @@ from menu.components import ClickParticle, MenuItem
 class BCIModeButton(MenuItem):
     """脑机接口模式按钮 - 带有特殊脉冲动画和发光效果以突出显示"""
 
-    def __init__(self, text, x, y, font, title_font):
+    def __init__(self, text: str, x: int, y: int, font: pygame.font.Font, title_font: pygame.font.Font) -> None:
         self.text = text
         self.font = font
         self.title_font = title_font
@@ -33,7 +35,7 @@ class BCIModeButton(MenuItem):
         self.pulse_t = 0.0
         self.glow_particles = []
 
-    def update(self, dt=0.016):
+    def update(self, dt: float = 0.016) -> None:
         target = 1.0 if self.hovered else 0.0
         self.scale_t += (target - self.scale_t) * 0.15
         if self.click_t > 0:
@@ -49,7 +51,7 @@ class BCIModeButton(MenuItem):
             self.glow_particles.append(ClickParticle(px, py, (0, 180, 255)))
         self.glow_particles = [p for p in self.glow_particles if p.update(dt)]
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         pulse = math.sin(self.pulse_t) * 0.5 + 0.5
         glow_alpha = int(60 + pulse * 80)
 
@@ -77,15 +79,11 @@ class BCIModeButton(MenuItem):
         color = self.hover_color if self.hovered else self.bg_color
         border_color = (100, 220, 255) if self.hovered else (0, 180, 255)
         pygame.draw.rect(surf, color, (0, 0, w, h), border_radius=int(self.radius * s))
-        pygame.draw.rect(
-            surf, border_color, (0, 0, w, h), 3, border_radius=int(self.radius * s)
-        )
+        pygame.draw.rect(surf, border_color, (0, 0, w, h), 3, border_radius=int(self.radius * s))
 
         if self.click_t > 0:
             click_color = (*color, int(self.click_t * 150))
-            pygame.draw.rect(
-                surf, click_color, (0, 0, w, h), border_radius=int(self.radius * s)
-            )
+            pygame.draw.rect(surf, click_color, (0, 0, w, h), border_radius=int(self.radius * s))
 
         tw = self._text_surf.get_width()
         th = self._text_surf.get_height()
@@ -98,13 +96,9 @@ class BCIModeButton(MenuItem):
         for p in self.click_particles:
             p.draw(screen)
 
-    def trigger_click(self):
+    def trigger_click(self) -> None:
         self.click_t = 1.0
         for _ in range(25):
-            self.click_particles.append(
-                ClickParticle(self.rect.centerx, self.rect.centery, (0, 180, 255))
-            )
+            self.click_particles.append(ClickParticle(self.rect.centerx, self.rect.centery, (0, 180, 255)))
         for _ in range(12):
-            self.click_particles.append(
-                ClickParticle(self.rect.centerx, self.rect.centery, (255, 255, 255))
-            )
+            self.click_particles.append(ClickParticle(self.rect.centerx, self.rect.centery, (255, 255, 255)))

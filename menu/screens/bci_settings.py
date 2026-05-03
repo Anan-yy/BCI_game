@@ -1,5 +1,7 @@
 """BCI设置页面 - 配置科创平台TCP服务器连接参数"""
 
+from __future__ import annotations
+
 import pygame
 
 from bci.config import load_bci_config, save_bci_config
@@ -11,7 +13,7 @@ from menu.text_input import TextInputBox
 class BCISettingsScreen:
     """BCI连接设置页面"""
 
-    def __init__(self, screen, font, title_font):
+    def __init__(self, screen: pygame.Surface, font: pygame.font.Font, title_font: pygame.font.Font) -> None:
         self.screen = screen
         self.font = font
         self.title_font = title_font
@@ -66,7 +68,7 @@ class BCISettingsScreen:
         self.status_text = ""
         self.status_color = (255, 255, 255)
 
-    def run(self):
+    def run(self) -> str | None:
         """运行设置页面"""
         while self.running:
             dt = self.clock.tick(60) / 1000.0
@@ -91,7 +93,7 @@ class BCISettingsScreen:
 
         return self.result
 
-    def _save_and_close(self):
+    def _save_and_close(self) -> None:
         """保存配置并关闭"""
         ip = self.ip_input.get_text()
         try:
@@ -109,7 +111,7 @@ class BCISettingsScreen:
         self.running = False
         self.result = "back"
 
-    def _test_connection(self):
+    def _test_connection(self) -> None:
         """测试BCI连接"""
         ip = self.ip_input.get_text()
         try:
@@ -136,13 +138,13 @@ class BCISettingsScreen:
             self.status_text = "连接失败，请检查IP和端口"
             self.status_color = (255, 100, 100)
 
-    def _update(self, dt):
+    def _update(self, dt: float) -> None:
         self.ip_input.update(dt)
         self.port_input.update(dt)
         self.test_btn.update(dt)
         self.back_btn.update(dt)
 
-    def _draw(self):
+    def _draw(self) -> None:
         self.screen.fill((30, 30, 40))
 
         title = self.title_font.render("脑机接口设置", True, (255, 255, 255))
@@ -165,6 +167,4 @@ class BCISettingsScreen:
             )
 
         hint = self.font.render("ESC 返回主菜单", True, (100, 100, 100))
-        self.screen.blit(
-            hint, (SCREEN_WIDTH // 2 - hint.get_width() // 2, SCREEN_HEIGHT - 50)
-        )
+        self.screen.blit(hint, (SCREEN_WIDTH // 2 - hint.get_width() // 2, SCREEN_HEIGHT - 50))

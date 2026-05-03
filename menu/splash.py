@@ -1,5 +1,7 @@
 """游戏启动过场动画"""
 
+from __future__ import annotations
+
 import sys
 
 import pygame
@@ -7,7 +9,13 @@ import pygame
 from config import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
-def _render_text_with_outline(font, text, color, outline_color, outline_width=2):
+def _render_text_with_outline(
+    font: pygame.font.Font,
+    text: str,
+    color: tuple[int, int, int],
+    outline_color: tuple[int, int, int],
+    outline_width: int = 2,
+) -> list[tuple[pygame.Surface, tuple[int, int]]]:
     """渲染带描边的文字"""
     texts = []
     # 渲染中心文字
@@ -33,7 +41,7 @@ def _render_text_with_outline(font, text, color, outline_color, outline_width=2)
 class SplashScreen:
     """游戏启动动画：文字从左至右渐进显现，再从左至右快速消失"""
 
-    def __init__(self, screen, title_font):
+    def __init__(self, screen: pygame.Surface, title_font: pygame.font.Font) -> None:
         self.screen = screen
         self.title_font = title_font
         self.clock = pygame.time.Clock()
@@ -83,7 +91,7 @@ class SplashScreen:
         self.base_x = (SCREEN_WIDTH - self.full_w) // 2
         self.base_y = SCREEN_HEIGHT // 3
 
-    def run(self):
+    def run(self) -> None:
         start_ticks = pygame.time.get_ticks()
 
         # 动画时间控制（毫秒）
@@ -140,6 +148,6 @@ class SplashScreen:
             pygame.display.flip()
             self.clock.tick(60)
 
-    def _smoothstep(self, t):
+    def _smoothstep(self, t: float) -> float:
         t = max(0.0, min(1.0, t))
         return t * t * (3 - 2 * t)

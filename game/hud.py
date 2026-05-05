@@ -195,7 +195,7 @@ def draw_hud(
     elif free_combine:
         hint_text = "自由搭配，创造你的专属奶茶 | ESC 返回"
     else:
-        hint_text = "方向键: 移动 | Y: 头动 | K: 键盘 | ESC: 返回"
+        hint_text = "方向键: 左右移动 | ESC: 返回"
 
     hint1 = hint_font.render(hint_text, True, (50, 50, 50))
     screen.blit(hint1, (10, SCREEN_HEIGHT - 40))

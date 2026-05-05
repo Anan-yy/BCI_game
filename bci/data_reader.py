@@ -33,22 +33,24 @@ class BCIDataReader:
         self.attention = 50  # 专注力值（0-100），初始值 50
         self.yaw = 0  # 头动偏航角（度），正负表示左右
         self.last_update_time = time.time()  # 上一次成功读取的时间戳
-        self.timeout = 0.5  # 超时阈值（秒），500ms 内无新数据视为连接断开
+        self.timeout = 2.0  # 超时阈值（秒），2秒内无新数据视为连接断开
 
         self.socket = None
         self.connected = False
         self.recv_buffer = b""
         self.last_print_time = 0
         self.print_interval = 2.0
+        self.heartbeat_interval = 5.0  # 心跳间隔（秒）
+        self.last_heartbeat_time = 0
 
     def connect(self, ip=None, port=None):
         """
         连接BCI设备（科创平台TCP服务器）
-
+ 
         参数:
             ip: 服务器IP地址，默认使用 config.py 中的配置
             port: 服务器端口号，默认使用 config.py 中的配置
-
+ 
         返回:
             bool: 连接是否成功
         """
@@ -56,18 +58,35 @@ class BCIDataReader:
             self.server_ip = ip
         if port:
             self.server_port = port
-
+ 
         logger.info("[BCI] 尝试连接到 %s:%s...", self.server_ip, self.server_port)
-
+ 
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.settimeout(BCI_CONNECTION_TIMEOUT)
             self.socket.connect((self.server_ip, self.server_port))
+            
+            # 启用TCP Keepalive，防止平台认为连接断开
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+            
             self.socket.settimeout(0)  # 连接成功后设为非阻塞模式
             self.connected = True
             self.recv_buffer = b""
             self.last_update_time = time.time()
-            logger.info("[BCI] 已连接到科创平台")
+            self.last_heartbeat_time = time.time()
+            logger.info("[BCI] 已连接到科创平台 %s:%s", self.server_ip, self.server_port)
+            
+            # 发送简单的订阅/就绪消息（如果协议需要）
+            # 根据HybridBCI平台文档，可能需要发送订阅消息来接收数据
+            try:
+                # 尝试发送简单的就绪消息（JSON格式）
+                ready_msg = json.dumps({"type": "ready", "client": "crazy_milk_tea_cup"}).encode("utf-8")
+                ready_packet = struct.pack(">I", len(ready_msg)) + ready_msg
+                self.socket.sendall(ready_packet)
+                logger.info("[BCI] 已发送就绪消息到平台")
+            except Exception as e:
+                logger.warning("[BCI] 发送就绪消息失败（可能不需要）: %s", e)
+            
             return True
         except socket.timeout:
             logger.warning("[BCI] 连接超时（%s秒）", BCI_CONNECTION_TIMEOUT)
@@ -82,7 +101,7 @@ class BCIDataReader:
         except Exception as e:
             logger.error("[BCI] 连接失败: %s", e)
             self.connected = False
-
+ 
         return False
 
     def disconnect(self):
@@ -99,42 +118,53 @@ class BCIDataReader:
     def _recv_data(self):
         """
         接收TCP数据并解析JSON
-
+ 
         返回:
             dict: 解析后的JSON数据，如果无数据或解析失败返回 None
         """
         if not self.socket or not self.connected:
             return None
-
+ 
         try:
             data = self.socket.recv(4096)
             if not data:
+                # 连接被对端关闭
+                logger.warning("[BCI] 连接被平台关闭（收到空数据）")
+                self.connected = False
                 return None
             self.recv_buffer += data
+            logger.debug("[BCI] 收到 %d 字节数据，缓冲区共 %d 字节", len(data), len(self.recv_buffer))
         except BlockingIOError:
+            # 非阻塞模式下无数据可读，这是正常的
+            return None
+        except ConnectionResetError:
+            logger.error("[BCI] 连接被平台重置（ConnectionResetError）")
+            self.connected = False
             return None
         except Exception as e:
             logger.error("[BCI] 接收数据失败: %s", e)
             self.connected = False
             return None
-
+ 
         while len(self.recv_buffer) >= 4:
             payload_len = struct.unpack(">I", self.recv_buffer[:4])[0]
             total_len = 4 + payload_len
-
+ 
             if len(self.recv_buffer) < total_len:
                 break
-
+ 
             payload = self.recv_buffer[4:total_len]
             self.recv_buffer = self.recv_buffer[total_len:]
-
+ 
             try:
                 msg = json.loads(payload.decode("utf-8"))
+                self.last_update_time = time.time()
+                logger.debug("[BCI] 解析到消息: %s", msg.get("msg", "unknown"))
                 return msg
             except json.JSONDecodeError:
-                logger.warning("[BCI] JSON解析失败")
+                logger.warning("[BCI] JSON解析失败，跳过 %d 字节", payload_len)
                 continue
-
+ 
         return None
 
     def read_data(self, verbose=False):

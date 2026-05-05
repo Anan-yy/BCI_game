@@ -164,7 +164,9 @@ class GameSession:
 
         self.running = True
         self.show_summary = False
-        self.use_yaw_control = False
+        # 只有当BCI模式开启且设备连接成功时，才使用头动控制
+        self.use_yaw_control = self.bci_mode and self.bci_available
+        self.cup.yaw_control = self.use_yaw_control
         self.game_start_time = pygame.time.get_ticks()
         self.focus_samples = []
 
@@ -176,6 +178,11 @@ class GameSession:
         self.focus_teapot = None
         if teapot_img_path:
             self.focus_teapot = FocusTeapotUI(image_path=teapot_img_path, x=10, y=90, width=120, height=140)
+
+        if self.bci_mode and not self.bci_available:
+            logger.warning("BCI设备未连接，无法使用头动控制，将自动切换到键盘控制")
+            self.use_yaw_control = False
+            self.cup.yaw_control = False
 
     def _print_mode_rules(self) -> None:
         logger.info("=" * 50)
@@ -195,8 +202,8 @@ class GameSession:
             logger.info("  专注力越高，评分加成越大")
         else:
             logger.info("控制说明:")
-            logger.info("  方向键左/右: 移动杯子")
-            logger.info("  Y: 头动模式 | K: 键盘模式 | ESC: 返回菜单")
+            logger.info("  头动控制: 左右转头移动杯子")
+            logger.info("  ESC: 返回菜单")
         logger.info("=" * 50)
 
     def _draw_initial_frame(self) -> None:
@@ -240,13 +247,7 @@ class GameSession:
                 self.running = False
                 return
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_y:
-                    self.use_yaw_control = True
-                    self.cup.yaw_control = True
-                elif event.key == pygame.K_k:
-                    self.use_yaw_control = False
-                    self.cup.yaw_control = False
-                elif event.key == pygame.K_ESCAPE:
+                if event.key == pygame.K_ESCAPE:
                     self.show_summary = True
                     self.running = False
                     return

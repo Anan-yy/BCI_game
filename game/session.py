@@ -141,7 +141,7 @@ class GameSession:
             self.bci_available = self.bci_reader.connect()
 
         self.dead_zone = DeadZoneFilter(threshold=5)
-        self.smooth_yaw = ExponentialSmoothing(alpha=0.3)
+        self.smooth_yaw = ExponentialSmoothing(alpha=0.1)
 
         self.attention_curve = None
         if self.free_combine:
@@ -257,6 +257,12 @@ class GameSession:
             result = self.bci_reader.read_with_timeout()
             if result != (None, None):
                 self.attention, self.raw_yaw = result
+                # 添加调试信息：打印原始yaw值
+                print(f"[BCI DEBUG] raw_yaw={self.raw_yaw:.2f}, attention={self.attention}")
+                # 限幅：确保yaw在合理范围内
+                if abs(self.raw_yaw) > 180:
+                    print(f"[BCI WARNING] yaw值异常: {self.raw_yaw:.2f}，可能被重置为0")
+                    self.raw_yaw = 0
             else:
                 self.attention = 50
                 self.raw_yaw = 0
@@ -266,6 +272,7 @@ class GameSession:
 
         filtered_yaw = self.dead_zone.filter(self.raw_yaw)
         self.smoothed_yaw_value = self.smooth_yaw.smooth(filtered_yaw)
+        print(f"[BCI DEBUG] filtered_yaw={filtered_yaw:.2f}, smoothed_yaw={self.smoothed_yaw_value:.2f}")
 
         if self.attention is not None:
             self.focus_samples.append(self.attention)

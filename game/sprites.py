@@ -27,6 +27,9 @@ from config import (
     SCREEN_WIDTH,
     WHITE,
     YAW_SCALE,
+    YAW_MAPPING_MODE,
+    YAW_MIN,
+    YAW_MAX,
 )
 
 
@@ -106,8 +109,18 @@ class Cup(pygame.sprite.Sprite):
 
         if self.yaw_control and yaw is not None:
             # 头动控制模式
-            if abs(yaw) > DEAD_ZONE:  # DEAD_ZONE=5，死区阈值，防抖动
-                self.rect.x += yaw * YAW_SCALE  # YAW_SCALE=0.5，头动映射系数
+            if abs(yaw) > DEAD_ZONE:  # DEAD_ZONE，死区阈值，防抖动
+                if YAW_MAPPING_MODE == "absolute":
+                    # 绝对位置映射：将yaw [YAW_MIN, YAW_MAX] 映射到屏幕 [0, SCREEN_WIDTH-CUP_WIDTH]
+                    normalized = (yaw - YAW_MIN) / (YAW_MAX - YAW_MIN)  # 归一化到 [0, 1]
+                    normalized = max(0.0, min(1.0, normalized))  # 限制在 [0, 1]
+                    target_x = int(normalized * (SCREEN_WIDTH - CUP_WIDTH))
+                    self.rect.x = target_x
+                    print(f"[DEBUG] yaw={yaw:.2f}, normalized={normalized:.3f}, cup.x={self.rect.x}")
+                else:
+                    # 相对位移模式（原始方式）
+                    self.rect.x += yaw * YAW_SCALE
+                    print(f"[DEBUG] yaw={yaw:.2f}, delta_x={yaw * YAW_SCALE:.2f}, cup.x={self.rect.x}")
                 move_dir = -1 if yaw < 0 else 1
         elif keys:
             # 键盘控制模式

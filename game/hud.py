@@ -25,9 +25,7 @@ class FocusTeapotUI:
         if image_path and os.path.exists(image_path):
             try:
                 self._teapot_img = pygame.image.load(image_path).convert_alpha()
-                self._teapot_img = pygame.transform.scale(
-                    self._teapot_img, (self.width, self.height)
-                )
+                self._teapot_img = pygame.transform.scale(self._teapot_img, (self.width, self.height))
             except (pygame.error, OSError):
                 pass
 
@@ -53,9 +51,7 @@ class FocusTeapotUI:
         cy = self.y + self.height // 2
         body_r = self.width * 0.38
 
-        handle_rect = pygame.Rect(
-            cx + body_r - 5, cy - body_r * 0.6, self.width * 0.35, body_r * 1.2
-        )
+        handle_rect = pygame.Rect(cx + body_r - 5, cy - body_r * 0.6, self.width * 0.35, body_r * 1.2)
         pygame.draw.rect(screen, (139, 69, 19), handle_rect, 6, border_radius=10)
 
         spout_pts = [
@@ -70,12 +66,8 @@ class FocusTeapotUI:
 
         liquid_h = body_rect.height * (self.focus_value / 100.0)
         if liquid_h > 0:
-            clip_surf = pygame.Surface(
-                (body_rect.width, body_rect.height), pygame.SRCALPHA
-            )
-            pygame.draw.ellipse(
-                clip_surf, (255, 255, 255), (0, 0, body_rect.width, body_rect.height)
-            )
+            clip_surf = pygame.Surface((body_rect.width, body_rect.height), pygame.SRCALPHA)
+            pygame.draw.ellipse(clip_surf, (255, 255, 255), (0, 0, body_rect.width, body_rect.height))
             pygame.draw.rect(
                 clip_surf,
                 self._liquid_color,
@@ -91,12 +83,8 @@ class FocusTeapotUI:
                 )
             screen.blit(clip_surf, (body_rect.x, body_rect.y))
 
-        glass_surf = pygame.Surface(
-            (body_rect.width, body_rect.height), pygame.SRCALPHA
-        )
-        pygame.draw.ellipse(
-            glass_surf, (200, 200, 200, 80), (0, 0, body_rect.width, body_rect.height)
-        )
+        glass_surf = pygame.Surface((body_rect.width, body_rect.height), pygame.SRCALPHA)
+        pygame.draw.ellipse(glass_surf, (200, 200, 200, 80), (0, 0, body_rect.width, body_rect.height))
         screen.blit(glass_surf, (body_rect.x, body_rect.y))
         pygame.draw.ellipse(screen, (139, 69, 19), body_rect, 6)
 
@@ -132,6 +120,7 @@ def draw_hud(
     recipe_result=None,
     creative_ingredients=None,
     attention_curve=None,
+    bci_connected=False,
 ):
     """统一绘制游戏 HUD"""
     score_text = font.render(f"分数: {score_manager.score}", True, (0, 0, 0))
@@ -174,20 +163,14 @@ def draw_hud(
         rating = recipe_result["rating"]
         total_score = recipe_result["total_score"]
 
-        name_surf = recipe_font.render(
-            f"{rating['emoji']} {recipe_name}", True, rating["color"]
-        )
+        name_surf = recipe_font.render(f"{rating['emoji']} {recipe_name}", True, rating["color"])
         screen.blit(name_surf, (SCREEN_WIDTH // 2 - name_surf.get_width() // 2, 10))
 
-        grade_surf = recipe_font.render(
-            f"评分: {rating['name']} ({total_score})", True, rating["color"]
-        )
+        grade_surf = recipe_font.render(f"评分: {rating['name']} ({total_score})", True, rating["color"])
         screen.blit(grade_surf, (SCREEN_WIDTH // 2 - grade_surf.get_width() // 2, 45))
 
         if creative_ingredients:
-            ing_text = hint_font.render(
-                f"食材: {' + '.join(creative_ingredients)}", True, (80, 80, 80)
-            )
+            ing_text = hint_font.render(f"食材: {' + '.join(creative_ingredients)}", True, (80, 80, 80))
             screen.blit(ing_text, (SCREEN_WIDTH // 2 - ing_text.get_width() // 2, 80))
 
     if bci_mode:
@@ -199,3 +182,9 @@ def draw_hud(
 
     hint1 = hint_font.render(hint_text, True, (50, 50, 50))
     screen.blit(hint1, (10, SCREEN_HEIGHT - 40))
+
+    attention_value = attention if attention is not None else 0
+    attention_text = f"注意力: {int(attention_value)}"
+    attention_surface = font.render(attention_text, True, (0, 255, 0) if bci_connected else (255, 0, 0))
+    attention_rect = attention_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+    screen.blit(attention_surface, attention_rect)

@@ -352,6 +352,7 @@ class GameSession:
             recipe_result=self.recipe_result,
             creative_ingredients=self.creative_ingredients,
             attention_curve=self.attention_curve,
+            bci_connected=self.bci_available,
         )
 
         pygame.display.flip()

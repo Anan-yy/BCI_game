@@ -1102,7 +1102,7 @@ class GameSession:
             if self._profile:
                 p_level = self._profile.level
                 p_rev = self._profile.cumulative_revenue
-                can_save = not self._infinite and not (
+                can_save = not (
                     self.control_mode in ("bci", "bci_failed") and self.bci_mode and not self.bci_available
                 )
             else:

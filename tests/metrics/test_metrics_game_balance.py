@@ -1,6 +1,6 @@
 """
 3.2.3 等级成长与游戏平衡性测试
-三种玩家类型各10局完整模拟，追踪收益/升级/秘方/零收益/冻结等指标
+三种玩家类型各模拟10人，每人10局，追踪收益/升级/秘方/零收益/冻结等指标
 """
 import os
 import sys
@@ -24,6 +24,7 @@ PLAYER_TYPES = {
     "中等波动型": "medium",
     "低专注涣散型(新手)": "low_fluctuating",
 }
+PLAYERS_PER_TYPE = 10
 GAMES_PER_TYPE = 10
 FPS = 60
 WARMUP_SECS = 180
@@ -64,46 +65,53 @@ def run_single_game(player_type: str, profile: PlayerProfile, seed: int) -> dict
 
 
 def run():
+    total_players = PLAYERS_PER_TYPE * len(PLAYER_TYPES)
+    total_games = total_players * GAMES_PER_TYPE
     print("=" * 65)
     print("3.2.3 等级成长与游戏平衡性测试")
-    print(f"每类玩家 {GAMES_PER_TYPE} 局，共 {GAMES_PER_TYPE * len(PLAYER_TYPES)} 局")
+    print(f"每类 {PLAYERS_PER_TYPE} 人 × {GAMES_PER_TYPE} 局 = {PLAYERS_PER_TYPE * GAMES_PER_TYPE} 局")
+    print(f"共 {total_players} 名模拟玩家，{total_games} 局游戏")
     print("=" * 65)
 
     all_results: dict[str, list[dict]] = {}
 
     for pname, ptype in PLAYER_TYPES.items():
         print(f"\n--- {pname} ---")
-        profile = PlayerProfile(_username=pname)
         game_log: list[dict] = []
+        all_rev, all_sec, all_zero, all_freeze, all_art, all_catch = [], [], [], [], [], []
+        final_levels = []
 
-        for g in range(GAMES_PER_TYPE):
-            seed = hash(f"{ptype}_{g}") % (2**31)
-            metrics = run_single_game(ptype, profile, seed)
-            game_log.append(metrics)
+        for p in range(PLAYERS_PER_TYPE):
+            profile = PlayerProfile(_username=f"{pname}_{p}")
+            for g in range(GAMES_PER_TYPE):
+                seed = hash(f"{ptype}_{p}_{g}") % (2**31)
+                metrics = run_single_game(ptype, profile, seed)
+                game_log.append(metrics)
+
+                all_rev.append(metrics["revenue"])
+                all_sec.append(metrics["secrets"])
+                all_zero.append(metrics["zero_revenue_cups"] / max(metrics["cups"], 1) * 100)
+                all_freeze.append(metrics["freeze_count"])
+                all_art.append(metrics["artifact_count"])
+                all_catch.append(metrics["total_catches"])
+
+            final_levels.append(profile.level)
 
         all_results[pname] = game_log
 
-        revenues = [r["revenue"] for r in game_log]
-        secrets = [r["secrets"] for r in game_log]
-        zero_cups = [r["zero_revenue_cups"] / max(r["cups"], 1) * 100 for r in game_log]
-        freezes = [r["freeze_count"] for r in game_log]
-        artifacts = [r["artifact_count"] for r in game_log]
-        catches = [r["total_catches"] for r in game_log]
+        print(f"  每局收益:      均值 {np.mean(all_rev):.0f}  |  范围 [{min(all_rev)}-{max(all_rev)}]")
+        print(f"  秘方/局:       {np.mean(all_sec):.1f} 次")
+        print(f"  零收益杯:      {np.mean(all_zero):.1f}%")
+        print(f"  冻结/局:       {np.mean(all_freeze):.1f} 次")
+        print(f"  防作弊/局:     {np.mean(all_art):.1f} 次")
+        print(f"  接住食材/局:   {np.mean(all_catch):.0f} 个")
+        print(f"  最终等级:      Lv.{min(final_levels)}~Lv.{max(final_levels)} (mid={np.median(final_levels):.0f})")
 
-        levels = [r["level_after"] for r in game_log]
-        first_lv2 = next((i + 1 for i, lv in enumerate(levels) if lv >= 2), GAMES_PER_TYPE)
-        first_lv3 = next((i + 1 for i, lv in enumerate(levels) if lv >= 3), GAMES_PER_TYPE)
-        first_lv4 = next((i + 1 for i, lv in enumerate(levels) if lv >= 4), GAMES_PER_TYPE)
+    _plot_revenue_growth(all_results)
+    _plot_player_comparison(all_results)
+    _plot_cup_distribution(all_results)
 
-        print(f"  每局收益:      均值 {np.mean(revenues):.0f}  |  范围 [{min(revenues)}-{max(revenues)}]")
-        print(f"  升级轨迹:      Lv2(局{first_lv2}) → Lv3(局{first_lv3}) → Lv4(局{first_lv4})")
-        print(f"  秘方/局:       {np.mean(secrets):.1f} 次")
-        print(f"  零收益杯:      {np.mean(zero_cups):.1f}%")
-        print(f"  冻结/局:       {np.mean(freezes):.1f} 次")
-        print(f"  防作弊/局:     {np.mean(artifacts):.1f} 次")
-        print(f"  接住食材/局:   {np.mean(catches):.0f} 个")
-        print(f"  10局累计收益:  {profile.cumulative_revenue} 元")
-        print(f"  最终等级:      {profile.level}")
+    print("\n测试完成。\n")
 
     _plot_revenue_growth(all_results)
     _plot_player_comparison(all_results)
@@ -116,12 +124,20 @@ def _plot_revenue_growth(all_results: dict[str, list[dict]]) -> None:
     fig, ax = plt.subplots(figsize=(5.90, 3.31))
     colors = {"高专注平稳型(高手)": "#2E86AB", "中等波动型": "#F18F01", "低专注涣散型(新手)": "#D1495B"}
     lv_lines = [80, 250, 600]
+    n_players = PLAYERS_PER_TYPE
 
     for pname, game_log in all_results.items():
-        cum_rev = np.cumsum([r["revenue"] for r in game_log])
-        x = np.arange(1, len(cum_rev) + 1)
-        ax.plot(x, cum_rev, marker="o", linewidth=2, markersize=6,
-                color=colors.get(pname, "#333"), label=pname)
+        c = colors.get(pname, "#333")
+        x = np.arange(1, GAMES_PER_TYPE + 1)
+        player_curves = []
+        for p in range(PLAYERS_PER_TYPE):
+            start = p * GAMES_PER_TYPE
+            end = start + GAMES_PER_TYPE
+            cum = np.cumsum([r["revenue"] for r in game_log[start:end]])
+            player_curves.append(cum)
+            ax.plot(x, cum, linewidth=0.6, color=c, alpha=0.4)
+        mean_curve = np.mean(player_curves, axis=0)
+        ax.plot(x, mean_curve, linewidth=2, color=c, marker="o", markersize=4, label=pname)
 
     for lv_val in lv_lines:
         ax.axhline(y=lv_val, color="gray", linestyle="--", alpha=0.4, linewidth=0.8)
@@ -144,15 +160,17 @@ def _plot_revenue_growth(all_results: dict[str, list[dict]]) -> None:
 
 def _plot_player_comparison(all_results: dict[str, list[dict]]) -> None:
     fig, axes = plt.subplots(2, 2, figsize=(5.91, 4.40))
-    fig.suptitle("三种玩家类型关键指标对比 (箱线图, n=10局)", fontweight="bold")
+    fig.suptitle("三种玩家类型关键指标对比 (箱线图, n=100局)", fontweight="bold")
 
     pnames = list(all_results.keys())
     metrics_cfg = [
         (0, 0, "revenue", "每局收益 (元)", "#4A90D9"),
         (0, 1, "secrets", "秘方触发次数", "#F5A623"),
-        (1, 0, "zero_revenue_cups", "零收益杯数", "#D1495B"),
+        (1, 0, "zero_revenue_cups", "零收益杯数 (%)", "#D1495B"),
         (1, 1, "freeze_count", "冻结次数", "#7B68EE"),
     ]
+
+    from scipy.stats import f_oneway
 
     for row, col, key, title, color in metrics_cfg:
         ax = axes[row][col]
@@ -164,7 +182,7 @@ def _plot_player_comparison(all_results: dict[str, list[dict]]) -> None:
             data_list.append(raw)
 
         bp = ax.boxplot(data_list, tick_labels=["高专注", "中专注", "低专注"], patch_artist=True,
-                         widths=0.5, showfliers=True, flierprops=dict(marker="o", markersize=5))
+                         widths=0.5, showfliers=True, flierprops=dict(marker="o", markersize=3))
 
         for patch, c in zip(bp["boxes"], [color] * 3):
             patch.set_facecolor(c)

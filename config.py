@@ -435,14 +435,6 @@ GAME_MODES = {
 # ============================================================
 CONTROL_MODES = [
     {
-        "key": "training",
-        "name": "训练模式",
-        "desc": "分阶段训练，配置原萃/特调/忆调时长",
-        "enabled": True,
-        "color": (160, 40, 40),
-        "glow": (220, 80, 80),
-    },
-    {
         "key": "bci_normal",
         "name": "特调模式",
         "desc": "BCI头环控制杯子，未连接时键盘控制",
@@ -465,6 +457,14 @@ CONTROL_MODES = [
         "enabled": True,
         "color": (200, 100, 50),
         "glow": (255, 150, 100),
+    },
+    {
+        "key": "training",
+        "name": "训练模式",
+        "desc": "分阶段训练，配置原萃/特调/忆调时长",
+        "enabled": True,
+        "color": (160, 40, 40),
+        "glow": (220, 80, 80),
     },
 ]
 

@@ -93,5 +93,5 @@ SDK文档
 HDataSystemSDK202605191455
 
 # bci训练日志
-!bci训练日志/
-!bci训练日志/**
+bci训练日志/
+tests/
